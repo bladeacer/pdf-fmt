@@ -1,4 +1,4 @@
-allowed_chars_regex: '[a-zA-Z0-9\s]+'
+allowed_chars_regex: '[a-zA-Z0-9\s_\.,;?!:''"()\[\]{}\/\\+=\-]+'
 
 footer_regexes:
   # 1. Bare Page Numbers (e.g., "5", " 10 ")
@@ -12,3 +12,12 @@ footer_regexes:
   
   # 4. Add any other full line patterns here:
   # - '^\s*Confidential Document\s*$'
+
+actions:
+  # Copy the result to the clipboard (set to true/false)
+  copy: false
+  
+  # Write the result to a file, supports txt and md
+  # Set to null or remove the key to disable
+  # E.g. write_file: output.md
+  write_file: output.md
