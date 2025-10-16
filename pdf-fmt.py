@@ -15,6 +15,9 @@ PATTERNS_FILE = "patterns.yaml"
 DEFAULT_CHARS_REGEX = r"[a-zA-Z0-9\s!\"#$%&'()*+,-./:;<=>?@\[\\\]^_`{|}~]+"
 
 def check_venv():
+    if getattr(sys, 'frozen', False):
+        return
+
     venv_path = os.environ.get('VIRTUAL_ENV')
     if not venv_path or not venv_path.endswith('.venv'):
         print("Error: Script must be run from the '.venv' virtual environment.")
