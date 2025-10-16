@@ -10,13 +10,13 @@ pip install -r requirements.txt
 ```
 
 ## Usage
-```
+```bash
 source ./.venv/bin/activate
 python pdf-fmt.py /path/to/your_file.pdf
 ```
 
 or if you are on Linux/MacOS
-```
+```bash
 source ./.venv/bin/activate
 sudo chmod +x ./pdf-fmt.py
 ./pdf-fmt.py /path/to/your_file.pdf
