@@ -1,0 +1,14 @@
+allowed_chars_regex: '[a-zA-Z0-9\s]+'
+
+footer_regexes:
+  # 1. Bare Page Numbers (e.g., "5", " 10 ")
+  - '^\s*\d+\s*$'
+  
+  # 2. Module Codes (Generalized: Matches any letters followed by digits, e.g., "IT1234", "BX9001", "CS101")
+  - '^.*\s*[A-Za-z]+\d+\s.*$'
+  
+  # 3. Another Module Code (e.g., "12S3v4")
+  - '^.*\d+S\d+[vV]\d+.*$'
+  
+  # 4. Add any other full line patterns here:
+  # - '^\s*Confidential Document\s*$'
