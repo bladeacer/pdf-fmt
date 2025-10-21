@@ -3,17 +3,8 @@
 # Copyright (c) 2025 bladeacer
 # Licensed under the GPLv3 License. See LICENSE file for details.
 
-import fitz
 import sys
 import os
-import re
-import yaml
-import pyperclip
-import argparse
-
-PATTERNS_FILE = "patterns.yaml"
-SCRIPT_VERSION = "1.0.0"
-DEFAULT_CHARS_REGEX = r"[a-zA-Z0-9\s!\"#$%&'()*+,-./:;<=>?@\[\\\]^_`{|}~]+"
 
 def check_venv():
     if getattr(sys, 'frozen', False):
@@ -25,30 +16,17 @@ def check_venv():
         print("Please activate it first (e.g., 'source .venv/bin/activate').")
         sys.exit(1)
 
-def load_patterns_from_yaml(file_path):
-    """Loads all configuration data from a YAML file with graceful error handling."""
-    if not os.path.exists(file_path):
-        print(f"Warning: Configuration file '{file_path}' not found. Using defaults.")
-        return {}
-    
-    try:
-        with open(file_path, 'r') as f:
-            config = yaml.safe_load(f)
-            return config if isinstance(config, dict) else {}
-            
-    except yaml.YAMLError as e:
-        print(f"Error: Invalid YAML syntax in '{file_path}': {e}. Using defaults.")
-        return {}
-    except Exception as e:
-        print(f"An unexpected error occurred while reading '{file_path}': {e}. Using defaults.")
-        return {}
+check_venv()
 
-def compile_footer_patterns(patterns):
-    """Compiles list of regex strings into regex objects."""
-    regex_list = []
-    for pattern_string in patterns:
-        regex_list.append(re.compile(pattern_string, re.IGNORECASE))
-    return regex_list
+import fitz
+import re
+import yaml
+import pyperclip
+import argparse
+
+PATTERNS_FILE = "patterns.yaml"
+SCRIPT_VERSION = "1.0.0"
+DEFAULT_CHARS_REGEX = r"[a-zA-Z0-9\s!\"#$%&'()*+,-./:;<=>?@\[\\\]^_`{|}~]+"
 
 def filter_line_content(line):
     """Filters line to keep only allowed characters."""
@@ -76,6 +54,31 @@ def is_footer(line):
             return True
             
     return False
+
+def load_patterns_from_yaml(file_path):
+    """Loads all configuration data from a YAML file with graceful error handling."""
+    if not os.path.exists(file_path):
+        print(f"Warning: Configuration file '{file_path}' not found. Using defaults.")
+        return {}
+    
+    try:
+        with open(file_path, 'r') as f:
+            config = yaml.safe_load(f)
+            return config if isinstance(config, dict) else {}
+            
+    except yaml.YAMLError as e:
+        print(f"Error: Invalid YAML syntax in '{file_path}': {e}. Using defaults.")
+        return {}
+    except Exception as e:
+        print(f"An unexpected error occurred while reading '{file_path}': {e}. Using defaults.")
+        return {}
+
+def compile_footer_patterns(patterns):
+    """Compiles list of regex strings into regex objects."""
+    regex_list = []
+    for pattern_string in patterns:
+        regex_list.append(re.compile(pattern_string, re.IGNORECASE))
+    return regex_list
 
 def extract_text_from_pdf(pdf_path):
     """Extracts, filters, and formats text from PDF."""
@@ -172,7 +175,6 @@ def setup_cli():
     return args
 
 if __name__ == "__main__":
-    check_venv()
     CONFIG = load_patterns_from_yaml(PATTERNS_FILE)
     
     LINE_REGEX_PATTERNS = CONFIG.get("footer_regexes", [])
@@ -184,9 +186,10 @@ if __name__ == "__main__":
     if not isinstance(CHARS_REGEX_STRING, str):
         print("Error: 'allowed_chars_regex' in YAML is not a string. Using default character set.")
         CHARS_REGEX_STRING = DEFAULT_CHARS_REGEX
+        
     COMPILED_FOOTER_PATTERNS = compile_footer_patterns(LINE_REGEX_PATTERNS)
     ALLOWED_CHARS_PATTERN = re.compile(CHARS_REGEX_STRING)
-    
+
     args = setup_cli()
     pdf_file_path = args.pdf_path
     
