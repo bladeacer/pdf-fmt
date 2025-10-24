@@ -1,4 +1,4 @@
 .venv/
 dist/
 build/
-pdf-fmt.spec
+output.md

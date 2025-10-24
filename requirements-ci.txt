@@ -1,0 +1,4 @@
+pyyaml
+PyMuPDF
+pyperclip
+breame
