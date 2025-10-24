@@ -267,7 +267,7 @@ def apply_regex_enclosure(text: str, pattern: str, wrapper: str) -> str:
         return text
         
     try:
-        compiled_pattern = re.compile(pattern)
+        compiled_pattern = re.compile(pattern, re.IGNORECASE)
     except re.error as e:
         print(f"Warning: Invalid enclosure regex pattern '{pattern}' skipped. Error: {e}")
         return text

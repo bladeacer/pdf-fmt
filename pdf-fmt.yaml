@@ -3,6 +3,7 @@
 # ------------------------------------------------------------------------------
 # 1. FILTERS
 # Rules for character filtering, spelling linting, and line exclusion.
+# REGEX IS NOT CASE SENSITIVE, using Python flavoured regex. For more information, view https://docs.python.org/3/library/re.html
 # ------------------------------------------------------------------------------
 filters:
   
@@ -23,7 +24,8 @@ filters:
     - '^.*Copyright.*$'
     - '^.*Official.*$'
     - '^.*Private.*$'
-    - '^.*Confidential.*$'
+    - '^.*P.r.i.v.a.t.e.*$'
+    - '^.*C.o.n.f.i.d.e.n.t.i.a.l.*$'
     - '^.*All rights reserved.*$'
 
     # x. Add any other full line patterns here:
@@ -74,6 +76,7 @@ formatting:
   enforce_line_capitalization: true
   
   # Applies a wrapper around content that matches a regex.
+  # REGEX IS NOT CASE SENSITIVE, using Python flavoured regex. For more information, view https://docs.python.org/3/library/re.html
   regex_enclosures:
     # Pattern to match the content to be wrapped (e.g., list/array)
     - pattern: '\[.*?\]' 

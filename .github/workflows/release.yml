@@ -108,7 +108,7 @@ jobs:
         run: |
           RELEASE_URL=$(gh release create ${{ steps.get_tag.outputs.TAG_NAME }} \
             --draft \
-            --title "Release ${{ steps.get_tag.outputs.TAG_NAME }}" \
+            --title "Version ${{ steps.get_tag.outputs.TAG_NAME }}" \
             --notes "New release build from CI." \
             --repo ${{ github.repository }} \
             --target ${{ github.sha }} | tail -n 1)

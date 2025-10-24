@@ -14,7 +14,8 @@ accessible in your `$PATH`:
 * **LibreOffice CLI** (`soffice` or similar)
 * **Pandoc**
 
-To use the script installer, you would require Git and Python.
+To use the script installer, you would need
+[Git](https://git-scm.com/install/linux) and [Python](https://www.python.org/downloads/).
 
 For building the executable, you would need [the following `nuitka` requirements](https://github.com/Nuitka/Nuitka).
 
@@ -22,10 +23,11 @@ For building the executable, you would need [the following `nuitka` requirements
 
 ## Usage
 
-The script either runs from the activated `.venv` or as a compiled executable.
+The script either runs from the activated `.venv`, as a compiled executable or
+downloaded from the releases page.
 Extraction results will be printed and copied to your system clipboard.
 
-* To disable this behaviour, modify the configuration file.
+* To disable this behaviour, modify [the configuration file](#configuration).
 * Alternatively, you can also set if the extractions should be written to an
 output file.
 
@@ -34,10 +36,16 @@ output file.
 > using an OCR tool to convert the image-based text before processing it
 > with pdf-fmt.
 
+`pdf-fmt`'s core logic is located in [this Python file](./pdf-fmt.py).
+
 ### Download (recommended)
 
 You can download the executable for your operating system at
 [the releases page](https://github.com/bladeacer/pdf-fmt/releases/latest).
+
+> If you wish to get an updated version of the executable, download the newer
+> latest version and remove the old executable file.
+
 
 ## Installation: Run as a Script
 
@@ -96,7 +104,7 @@ python -m pip install uv
 uv pip install -r requirements.txt
 ```
 
----
+To update, run the scripts again.
 
 ### Build as Executable
 
@@ -120,13 +128,13 @@ The compilation will take a while. It will output the executable to the `dist/` 
 All rules are defined in the [**`pdf-fmt.yaml`**](./pdf-fmt.yaml) file, which
 uses the following categories:
 
-* **`filters`**: Regex rules for allowing/excluding characters and filtering
+* `filters`: Regex rules for allowing/excluding characters and filtering
 * out headers/footers. Includes spelling enforcement.
-* **`conversion`**: Lists supported non-PDF formats (requires LibreOffice or Pandoc).
-* **`formatting`**: Controls line wrapping (using `min_chars_per_line` and
+* `conversion`: Lists supported non-PDF formats (requires LibreOffice or Pandoc).
+* `formatting`: Controls line wrapping (using `min_chars_per_line` and
 `max_chars_per_line`), capitalization enforcement, indentation formatting, and
 page separators.
-* **`actions`**: Defines post-extraction steps, such as copying to the
+* `actions`: Defines post-extraction steps, such as copying to the
   clipboard or writing to an output file.
 
 `pdf-fmt` will look for the configuration file under the following locations.
@@ -137,10 +145,13 @@ page separators.
   * `$XDG_CONFIG_HOME` or `~/.config` if you are on Linux
 * The current working directory of the script
 
-## Development
+## Contributing
 
 Create your own fork or clone the repository. The below example shows cloning
 the repository.
+
+Do note that this repository has its own [Code of Conduct](./CODE_OF_CONDUCT.md)
+and [Contributing Guide](./CONTRIBUTING.md).
 
 ### Setup
 
@@ -165,3 +176,12 @@ sudo chmod +x act.sh
 ## License
 
 GPLv3, See [license file](./LICENSE) for details.
+
+## Credits
+Existing PDF tooling for inspiration, LibreOffice CLI, GitHub for hosting
+and CI.
+
+The code of conduct was adopted from the
+[Contributor Covenant](https://www.contributor-covenant.org/)
+
+The contributing guide was adopted from [conduct](https://github.com/sindresorhus/conduct)
