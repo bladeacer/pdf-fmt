@@ -36,17 +36,15 @@ output file.
 > using an OCR tool to convert the image-based text before processing it
 > with pdf-fmt.
 
-### Download
+### Download from Release Page
 
-You can download the executable for your operating system at
-[the releases page](https://github.com/bladeacer/pdf-fmt/releases/latest).
+You can download the compiled binary for your operating system from
+[the latest release](https://github.com/bladeacer/pdf-fmt/releases/latest).
 
 > If you wish to get an updated version of the executable, download the newer
 > latest version and remove the old executable file.
 
-Currently WIP, might be broken.
-
-## Installation: Run as a Script (recommended)
+## Run as Script (recommended)
 
 **WARNING: Always check the contents of any script downloaded from
 the internet before running it.**
@@ -125,7 +123,7 @@ python -m nuitka \
 
 The compilation will take a while. It will output the executable to the `dist/` directory.
 
-Alternatively, you can call [this scripta on Linux](./scripts/dev.sh)
+Alternatively, you can call [this script on Linux](./scripts/dev.sh)
 
 > You can choose to add it to your system `$PATH`.
 
@@ -178,6 +176,11 @@ curl -o act.sh https://raw.githubusercontent.com/bladeacer/pdf-fmt/refs/heads/ma
 sudo chmod +x act.sh
 ./act.sh
 ```
+
+### Help Needed
+
+* Testing downloaded binary, script and compiled executable on Windows
+* Testing compiled executable on Linux
 
 ---
 
