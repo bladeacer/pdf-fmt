@@ -180,7 +180,7 @@ sudo chmod +x act.sh
 ### Help Needed
 
 * Testing downloaded binary, script and compiled executable on Windows
-* Testing compiled executable on Linux
+* Testing downloaded binary, script and compiled executable on Windows
 
 ---
 
