@@ -55,6 +55,7 @@ jobs:
           script-name: build.py
           mode: app
 
+          output-file: pdf-fmt
           include-package: core,parser
 
           lto: auto
