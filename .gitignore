@@ -2,3 +2,4 @@
 dist/
 build/
 output.md
+__pycache__/

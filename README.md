@@ -36,9 +36,7 @@ output file.
 > using an OCR tool to convert the image-based text before processing it
 > with pdf-fmt.
 
-`pdf-fmt`'s core logic is located in [this Python file](./pdf-fmt.py).
-
-### Download (recommended)
+### Download
 
 You can download the executable for your operating system at
 [the releases page](https://github.com/bladeacer/pdf-fmt/releases/latest).
@@ -46,8 +44,9 @@ You can download the executable for your operating system at
 > If you wish to get an updated version of the executable, download the newer
 > latest version and remove the old executable file.
 
+Currently WIP, might be broken.
 
-## Installation: Run as a Script
+## Installation: Run as a Script (recommended)
 
 **WARNING: Always check the contents of any script downloaded from
 the internet before running it.**
@@ -104,7 +103,7 @@ python -m pip install uv
 uv pip install -r requirements.txt
 ```
 
-To update, run the scripts again.
+To update, run `git pull` in the repository created by the script.
 
 ### Build as Executable
 
@@ -112,12 +111,21 @@ Requires running the script installer or [the above commands](#what-the-scripts-
 
 ```bash
 source ./.venv/bin/activate
-python -m nuitka --onefile --standalone --output-dir=dist pdf-fmt.py
+python -m nuitka \
+    --module-name=pdf_fmt \
+    --standalone \
+    --include-package=parser,core \
+    --output-dir=./build \
+    --assume-yes-for-downloads \
+    --onefile \
+    build.py
 
 ./dist/pdf-fmt /path/to/your_file.pdf
 ```
 
 The compilation will take a while. It will output the executable to the `dist/` directory.
+
+Alternatively, you can call [this scripta on Linux](./scripts/dev.sh)
 
 > You can choose to add it to your system `$PATH`.
 

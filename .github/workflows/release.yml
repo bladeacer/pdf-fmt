@@ -28,10 +28,10 @@ jobs:
           
           if [ "${{ runner.os }}" == "Windows" ]; then
             echo "COMPILER_FLAG=mingw64" >> $GITHUB_ENV
-            echo "EXECUTABLE_NAME=pdf-fmt-Windows-${VERSION_NUMBER}.exe" >> $GITHUB_ENV
+            echo "EXECUTABLE_NAME=pdf-fmt-Windows-x64-${VERSION_NUMBER}.exe" >> $GITHUB_ENV
           elif [ "${{ runner.os }}" == "Linux" ]; then
             echo "COMPILER_FLAG=" >> $GITHUB_ENV
-            echo "EXECUTABLE_NAME=pdf-fmt-Linux-${VERSION_NUMBER}" >> $GITHUB_ENV
+            echo "EXECUTABLE_NAME=pdf-fmt-Linux-x64-${VERSION_NUMBER}" >> $GITHUB_ENV
           fi
 
       - name: Setup Python
@@ -52,8 +52,10 @@ jobs:
           PDF_FMT_CI_BUILD: 1
         with:
           nuitka-version: main
-          script-name: pdf-fmt.py
+          script-name: build.py
           mode: app
+
+          include-package: core,parser
 
           lto: auto
           warn-implicit-exceptions: true
@@ -63,7 +65,7 @@ jobs:
           product-name: pdf-fmt
           product-version: ${{ env.VERSION_NUMBER }}
           file-version: ${{ env.VERSION_NUMBER }}
-
+          unstripped: false
           mingw64: ${{ env.COMPILER_FLAG == 'mingw64' }}
 
       - name: Rename Executable for Release
