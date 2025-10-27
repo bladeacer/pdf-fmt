@@ -174,7 +174,7 @@ latest version and remove the old executable file.
 
 -----
 
-## Compiling from Source
+## Compile from Source
 
 To be added once confirmed to be working.
 Requires running the script installer or the following commands. This example
@@ -219,8 +219,8 @@ compiling is done.
 >
 > If the compilation takes up too much memory, it will crash and exit without completing.
 
-Compilation logs will be found at [nuitka-build.log](./nuitka-build.log).
-Crash reports would be found at [nuitka-crash-report.xml](./nuitka-crash-report.xml).
+Compilation logs will be found at `nuitka-build.log`.
+Crash reports would be found at `nuitka-crash-report.xml`.
 
 Alternatively, you can call [this script on Linux or macOS](./scripts/compile.sh)
 
