@@ -46,7 +46,7 @@ to manage all dependencies.
 ## Prerequisites
 
 * You would need to have [Git](https://git-scm.com/install) and
-[Python 3 or above](https://www.python.org/downloads/) installed
+[Python 3.10 or above](https://www.python.org/downloads/) installed
   * To confirm, run `which git` and `which python` in a Linux/macOS terminal
   * For Windows users, run `where git` and `where python` in Command Prompt
 
@@ -68,8 +68,8 @@ For converting non-PDF files (like `.docx`, `.pptx`, `.odt`) to PDF before
 extraction, either **system dependencies** needs to be installed and
 accessible in your `$PATH`:
 
-* **LibreOffice's CLI** (`soffice` or similar)
-* **Pandoc**
+* [**LibreOffice's CLI** \(`soffice` or similar\)](https://www.libreoffice.org/)
+* [**Pandoc**](https://pandoc.org/)
 
 ### Local compilation
 
@@ -196,6 +196,9 @@ pyenv install 3.11
 pyenv local 3.11
 ```
 
+You can use any other target Python version, though `pdf-fmt` primarily supports
+Python 3.10 or above.
+
 ### Linux/macOS
 
 ```bash
@@ -251,7 +254,6 @@ configuration file. If you do, ensure that it is named `pdf-fmt.yaml`.
 
 -----
 
-
 ## Supported platforms
 
 This table documents the currently supported platforms for `pdf-fmt` and
@@ -289,29 +291,22 @@ compiling from source.
 | **Windows 11 x64** | N/A | `MSVCRT` (via `MSVC`/`MinGW`) | Partial | Binary works out of the box. Contributions are welcome for script/compiling from source |
 
 
-### Note: Script Installer
-The script installer should work for all major operating systems that support
-`Git`, `Python`, `PyMuPDF` and `pyperclip`.
-
 ### Note: Linux users
 To check the C Standard Library used on Linux, run `ldd --version`.
 
 To check the Display Protocol currently used on Linux, run `echo $XDG_SESSION_TYPE`.
 
-You may need to install `patchelf`
+You may need to install [patchelf`](https://github.com/NixOS/patchelf).
 
 ## Supported Python Versions
 
 | Python Version | Known to work? | Comments |
 | --- | --- | --- |
 | 3.10 | Partial | Used in GitHub Actions CI, needs different flags to compile locally |
-| 3.11 | Yes | Compiling from source locally works |
+| 3.11 | Yes | Compiling from source, script, executable works. |
 | 3.12 | Untested | Contributions are welcome |
 | 3.13 | Untested | Contributions are welcome |
-| 3.13 | Untested | Contributions are welcome |
-
-<!-- This table primarily applies to compiling from source. If the script does not -->
-<!-- work with a Python version above 3.9, please feel free to open an issue. -->
+| 3.14 | Untested | Contributions are welcome |
 
 -----
 
@@ -333,7 +328,24 @@ chmod +x scripts/setup.sh
 
 -----
 
+## Benchmarks
+TBC
+
+### Note: Compatibility
+The script installer and compiling from source should work for all major
+operating systems that support `Git`, `Python`,
+[`pdfminer.six`](https://github.com/pdfminer/pdfminer.six) and
+[`pyperclip`](https://github.com/asweigart/pyperclip).
+> Note: These dependencies are slightly larger than their C equivalents, though this
+> is a calculated trade off.
+
+
+-----
+
 ## Tests
+
+### Unit Tests
+TBC
 
 ### Test GitHub Action
 
