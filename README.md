@@ -302,11 +302,11 @@ You may need to install [patchelf`](https://github.com/NixOS/patchelf).
 
 | Python Version | Known to work? | Comments |
 | --- | --- | --- |
-| 3.10 | Partial | Used in GitHub Actions CI, needs different flags to compile locally |
-| 3.11 | Yes | Compiling from source, script, executable works. |
-| 3.12 | Untested | Contributions are welcome |
-| 3.13 | Untested | Contributions are welcome |
-| 3.14 | Untested | Contributions are welcome |
+| 3.10 | Partial | WIP |
+| 3.11 | Yes | Compiling from source, script, executable works. Used in GitHUb Actions. |
+| 3.12 | Untested | WIP |
+| 3.13 | Untested | WIP |
+| 3.14 | Untested | WIP |
 
 -----
 
