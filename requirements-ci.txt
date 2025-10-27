@@ -1,0 +1,4 @@
+pyyaml
+pdfminer.six
+pyperclip
+breame

@@ -1,0 +1,100 @@
+# pdf-fmt.yaml
+
+# ------------------------------------------------------------------------------
+# 1. FILTERS
+# Rules for character filtering, spelling linting, and line exclusion.
+# REGEX IS NOT CASE SENSITIVE, using Python flavoured regex. For more information, view https://docs.python.org/3/library/re.html
+# ------------------------------------------------------------------------------
+filters:
+  
+  # The set of allowed characters. Any character not matching this will be filtered.
+  allowed_chars_regex: '[a-zA-Z0-9\s!\"#$%&''()*+,-./:;<=>?@\[\\\]^_`{|}~]+'
+
+  # List of regexes to identify and exclude footer or header lines (case-insensitive).
+  footer_regexes:
+    # 1. Bare Page Numbers (e.g., "5", " 10 ")
+    - '^\s*\d+\s*$'
+    
+    # 2. Module Codes (Generalized: Matches any letters followed by digits, e.g., "IT1234", "BX9001", "CS101")
+    - '^.*\s*[A-Za-z]+\d+\s.*$'
+    
+    # 3. Another Module Code (e.g., "12S3v4")
+    - '^.*\d+S\d+[vV]\d+.*$'
+
+    - '^.*Copyright.*$'
+    - '^.*Official.*$'
+    - '^.*Private.*$'
+    - '^.*All rights reserved.*$'
+
+    # x. Add any other full line patterns here:
+    # - '^\s*Confidential Document\s*$'
+  
+  # Configuration for enforcing spelling rules.
+  linting:
+    # Defines the language standard to enforce. Options: "en-US", "en-UK", or "none".
+    spelling:
+      # enforce_locale: "en-US" 
+      enforce_locale: "en-UK" 
+      ignore_locale_strings:
+          - "filter"
+
+# ------------------------------------------------------------------------------
+# 2. CONVERSION
+# Configuration for converting non-PDF documents (requires LibreOffice or pandoc).
+# ------------------------------------------------------------------------------
+conversion:
+  
+  # List of file extensions that the program should attempt to convert to PDF 
+  # before extraction.
+  supported_formats: 
+    - 'pptx'
+    - 'ppt'
+    - 'doc'
+    - 'docx'
+    - 'odt'
+    - 'xls'
+    - 'xlsx'
+
+# ------------------------------------------------------------------------------
+# 3. FORMATTING
+# Rules governing line breaks, line joining, indentation, capitalization, and custom enclosures.
+# ------------------------------------------------------------------------------
+formatting:
+  
+  # If a line is shorter than this value (default 0), it will be joined with the next line,
+  # unless it ends a sentence or is a list item. Set to 0 to disable line joining.
+  min_chars_per_line: 0 
+
+  # Lines exceeding this character count will be wrapped/split at the nearest space.
+  # Set to 0 to disable, or a suitable width (default 80).
+  max_chars_per_line: 80
+  
+  # Defines how to handle page breaks.
+  # Options: "--- PAGE SEPARATOR ---" (default), "___", or "none".
+  page_separator: "___" 
+  
+  # If true, ensures the first alphabetic character of every line is capitalized.
+  enforce_line_capitalization: false
+  
+  # Applies a wrapper around content that matches a regex.
+  # REGEX IS NOT CASE SENSITIVE, using Python flavoured regex. For more information, view https://docs.python.org/3/library/re.html
+  regex_enclosures:
+    # Pattern to match the content to be wrapped (e.g., list/array)
+    - pattern: '\[.*?\]' 
+    # The symbol to wrap the matched content with. e.g., '`' will result in `[1, 2, 3]`.
+      wrapper: '`' 
+    # You can specify more than one item
+    # - pattern: '\[.*?\]' 
+      # wrapper: '`' 
+
+# ------------------------------------------------------------------------------
+# 4. ACTIONS
+# Defines actions to take after successful extraction.
+# ------------------------------------------------------------------------------
+actions:
+  # If true, the extracted text will be copied to the system clipboard.
+  copy: true 
+  
+  # If set to a valid string path, the extracted text will be written to that file.
+  # write_file: "output.md"
+  write_file: ""

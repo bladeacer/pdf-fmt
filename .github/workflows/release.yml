@@ -1,0 +1,125 @@
+name: pdf-fmt Release
+
+on:
+  push:
+    tags:
+      - '[0-9]+.[0-9]+.[0-9]+'
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Check-out repository
+        uses: actions/checkout@v4
+      
+      - name: Set Version and OS-Specific Flags
+        id: set_flags
+        shell: bash
+        run: |
+          TAG_NAME="${GITHUB_REF_NAME}"
+          VERSION_NUMBER="${TAG_NAME}"
+          echo "VERSION_NUMBER=${VERSION_NUMBER}" >> $GITHUB_ENV
+          echo "TAG_NAME=${TAG_NAME}" >> $GITHUB_ENV
+          
+          if [ "${{ runner.os }}" == "Windows" ]; then
+            echo "COMPILER_FLAG=mingw64" >> $GITHUB_ENV
+            echo "EXECUTABLE_NAME=pdf-fmt-Windows-x64-${VERSION_NUMBER}.exe" >> $GITHUB_ENV
+          elif [ "${{ runner.os }}" == "Linux" ]; then
+            echo "COMPILER_FLAG=" >> $GITHUB_ENV
+            echo "EXECUTABLE_NAME=pdf-fmt-Linux-x64-${VERSION_NUMBER}" >> $GITHUB_ENV
+          fi
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          architecture: 'x64'
+          cache: 'pip'
+          cache-dependency-path: |
+            **/requirements-ci.txt
+
+      - name: Install Dependencies
+        run: pip install -r requirements-ci.txt
+
+      - name: Build Executable
+        uses: Nuitka/Nuitka-Action@main
+        env:
+          PDF_FMT_CI_BUILD: 1
+        with:
+          nuitka-version: main
+          script-name: build.py
+          mode: app
+          python-flag: no_docstrings
+          deployment: on
+          output-file: pdf-fmt
+          include-package: core,parser
+
+          warn-implicit-exceptions: true
+          warn-unusual-code: true
+          copyright: "Copyright (C) 2025 bladeacer. Licensed under GPLv3."
+
+          product-name: pdf-fmt
+          product-version: ${{ env.VERSION_NUMBER }}
+          file-version: ${{ env.VERSION_NUMBER }}
+          mingw64: ${{ env.COMPILER_FLAG == 'mingw64' }}
+
+      - name: Rename Executable for Release
+        shell: bash
+        run: |
+          if [ "${{ runner.os }}" == "Windows" ]; then
+            mv build/*.exe ${{ env.EXECUTABLE_NAME }}
+          elif [ "${{ runner.os }}" == "Linux" ]; then
+            mv build/pdf-fmt ${{ env.EXECUTABLE_NAME }} || mv build/pdf-fmt.bin ${{ env.EXECUTABLE_NAME }}
+          fi
+          
+      - name: Upload Renamed Executable as Workflow Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-assets-${{ runner.os }} 
+          path: ${{ env.EXECUTABLE_NAME }}
+          retention-days: 1
+
+  release:
+    name: Create Draft Release and Upload Assets
+    needs: build
+    runs-on: ubuntu-latest
+    
+    permissions:
+      contents: write 
+
+    steps:
+      - name: Download all built artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: release-assets-*
+          path: release/
+          merge-multiple: true 
+
+      - name: Get Version Tag
+        id: get_tag
+        run: echo "TAG_NAME=${GITHUB_REF_NAME}" >> $GITHUB_OUTPUT
+        
+      - name: Create Draft Release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          RELEASE_URL=$(gh release create ${{ steps.get_tag.outputs.TAG_NAME }} \
+            --draft \
+            --title "Version ${{ steps.get_tag.outputs.TAG_NAME }}" \
+            --notes "New release build from CI." \
+            --repo ${{ github.repository }} \
+            --target ${{ github.sha }} | tail -n 1)
+          
+          echo "RELEASE_URL=$RELEASE_URL" >> $GITHUB_ENV
+
+      - name: Upload Assets to Draft Release (gh cli)
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release upload ${{ steps.get_tag.outputs.TAG_NAME }} release/* \
+            --repo ${{ github.repository }}

@@ -1,4 +1,9 @@
 .venv/
-dist/
+.venv-build/
 build/
-pdf-fmt.spec
+__pycache__/
+output.md
+nuitka-build.log
+nuitka-setup.log
+nuitka-crash-report.xml
+.pyenv-version
