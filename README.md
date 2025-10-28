@@ -19,6 +19,9 @@ documents and then clean, filter, and structure the output.
 
 It is useful for converting raw PDF dumps into clean, formatted text.
 
+Note that `pdf-fmt` is **under active development**, you might encounter bugs
+and issues.
+
 ### Why I made this
 
 There are plenty of PDF tooling out there, but they seems to be geared towards

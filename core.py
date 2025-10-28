@@ -1,94 +1,14 @@
 import sys
 import os
 import re
-import yaml
-import argparse
-import platform
-import subprocess
 from typing import List, Dict, Any, Tuple, Callable, Optional, TYPE_CHECKING
 
-CONFIG_FILENAME = "pdf-fmt.yaml"
-SCRIPT_VERSION = "0.6.0"
+NBSP = '\u00A0'
 DEFAULT_CHARS_REGEX = r"[a-zA-Z0-9\s!\"#$%&'()*+,-./:;<=>?@\[\\\]^_`{|}~]+"
 DEFAULT_CONVERT_FORMATS = ['pptx', 'ppt', 'doc', 'docx', 'odt']
-NBSP = '\u00A0'
 NON_ALPHA_PATTERN = re.compile(r'[^a-zA-Z]')
 
-IS_CI_BUILD = os.environ.get('PDF_FMT_CI_BUILD', '0') == '1'
-IS_NUITKA_COMPILED = "__compiled__" in globals()
-
 CompiledFilters = Dict[str, Callable[[str], Any]]
-
-def check_venv() -> None:
-    """Checks if the script is running inside a virtual environment (.venv)."""
-    if IS_NUITKA_COMPILED or getattr(sys, 'frozen', False) or IS_CI_BUILD:
-        return
-
-    venv_path = os.environ.get('VIRTUAL_ENV')
-    if not venv_path or not os.path.basename(venv_path) == '.venv':
-        print("Error: Script must be run from the '.venv' virtual environment.")
-        print("Please activate it first (e.g., 'source .venv/bin/activate').")
-        sys.exit(1)
-
-def setup_cli() -> argparse.Namespace:
-    """Sets up the argparse CLI and handles flags."""
-    parser = argparse.ArgumentParser(
-        description="pdf-fmt\n\nCleanly extracts and formats text from a PDF document or convertible file.\nLicensed under GPLv3.",
-        formatter_class=argparse.RawTextHelpFormatter
-    )
-    parser.add_argument(
-        'file_path',
-        nargs='?',
-        default=None,
-        help="Path to the PDF or convertible file (e.g., pptx, docx) to process."
-    )
-    parser.add_argument(
-        '-v', '--version',
-        action='version',
-        version=f'%(prog)s {SCRIPT_VERSION}',
-        help="Show script's version and exit."
-    )
-    args = parser.parse_args()
-    if args.file_path is None:
-        parser.print_help()
-        sys.exit(0)
-    return args
-
-def find_config_file(filename: str) -> Optional[str]:
-    """Searches for the config file using ENV, XDG standard, then CWD."""
-    env_path = os.environ.get('PDF_FMT_CONFIG_PATH')
-    if env_path and os.path.exists(env_path):
-        return env_path
-
-    if platform.system() == 'Windows':
-        config_dir = os.environ.get('APPDATA')
-    else:
-        config_dir = os.environ.get('XDG_CONFIG_HOME', os.path.expanduser('~/.config'))
-
-    if config_dir:
-        xdg_path = os.path.join(config_dir, 'pdf-fmt', filename)
-        if os.path.exists(xdg_path):
-            return xdg_path
-
-    cwd_path = os.path.join(os.getcwd(), filename)
-    if os.path.exists(cwd_path):
-        return cwd_path
-
-    return None
-
-def load_patterns_from_yaml(file_path: Optional[str]) -> Dict[str, Any]:
-    """Loads config data from a YAML file."""
-    if not file_path:
-        print(f"Warning: Configuration file '{CONFIG_FILENAME}' not found in any standard location. Using defaults.")
-        return {}
-    try:
-        with open(file_path, 'r', encoding='utf-8') as f:
-            config = yaml.safe_load(f)
-            print(f"INFO: Loaded configuration from: {file_path}")
-            return config if isinstance(config, dict) else {}
-    except Exception as e:
-        print(f"Error: Could not read or parse '{file_path}': {e}. Using defaults.")
-        return {}
 
 def write_content_to_file(content: str, file_path: str):
     """Writes content to a specified text file."""

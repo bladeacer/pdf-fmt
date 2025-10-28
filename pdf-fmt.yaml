@@ -34,7 +34,7 @@ filters:
     # Defines the language standard to enforce. Options: "en-US", "en-UK", or "none".
     spelling:
       # enforce_locale: "en-US" 
-      enforce_locale: "en-UK" 
+      enforce_locale: "en-US" 
       ignore_locale_strings:
           - "filter"
 
@@ -54,9 +54,19 @@ conversion:
     - 'odt'
     - 'xls'
     - 'xlsx'
+  
+# ------------------------------------------------------------------------------
+# 3. PROCESSING
+# Configuration during processing
+# ------------------------------------------------------------------------------
+# Uncomment the line immediately below if you wish to enable the processing module
+# processing:
+  # Number of CPU cores used when processing PDF extraction.
+  # If not set, will default to one less than the number of maximum CPU cores
+  # cores: 8
 
 # ------------------------------------------------------------------------------
-# 3. FORMATTING
+# 4. FORMATTING
 # Rules governing line breaks, line joining, indentation, capitalization, and custom enclosures.
 # ------------------------------------------------------------------------------
 formatting:
@@ -70,7 +80,7 @@ formatting:
   max_chars_per_line: 80
   
   # Defines how to handle page breaks.
-  # Options: "--- PAGE SEPARATOR ---" (default), "___", or "none".
+  # Options: "___" (default), "--- PAGE SEPARATOR ---" or "none".
   page_separator: "___" 
   
   # If true, ensures the first alphabetic character of every line is capitalized.
@@ -88,7 +98,7 @@ formatting:
       # wrapper: '`' 
 
 # ------------------------------------------------------------------------------
-# 4. ACTIONS
+# 5. ACTIONS
 # Defines actions to take after successful extraction.
 # ------------------------------------------------------------------------------
 actions:

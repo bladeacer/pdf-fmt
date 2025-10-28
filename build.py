@@ -1,13 +1,38 @@
+# Copyright (c) 2025 bladeacer
+# Licensed under the GPLv3 License. See LICENSE file for details.
+
 import sys
-from parser import execute_main_pipeline
+from typing import Dict, Any
+
+from startup import check_venv, check_not_root, StartupCheckError 
 
 def main():
-    """Main execution logic for the CI/compiled executable."""
+    """Main execution logic for the local script."""
+    
     try:
-        execute_main_pipeline()
+        check_not_root()
+        
+    except StartupCheckError as e:
+        print(e.message)
+        sys.exit(e.exit_code)
     except Exception as e:
-        print(f"A critical error occurred in the build execution: {e}", file=sys.stderr)
+        print(f"Unknown error: {e}")
+        sys.exit(1)
+
+    try:
+        import config
+        from parser import execute_main_pipeline
+        
+        CONFIG: Dict[str, Any] = config.load_config()
+        
+        execute_main_pipeline(CONFIG)
+    except StartupCheckError as e:
+        print(e.message)
+        sys.exit(e.exit_code)
+    except Exception as e:
+        print(f"Unknown error: {e}")
         sys.exit(1)
 
 if __name__ == "__main__":
     main()
+
