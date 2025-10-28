@@ -12,15 +12,15 @@ def main():
     """Main execution logic for the local script."""
     
     try:
-        check_venv()
         check_not_root()
+        check_venv()
         
     except StartupCheckError as e:
         print(e.message)
         sys.exit(e.exit_code)
     except Exception as e:
         print(f"Unknown error: {e}")
-        sys.exit(1)
+        sys.exit(e.exit_code)
 
     try:
         import config
@@ -31,7 +31,7 @@ def main():
         execute_main_pipeline(CONFIG)
     except StartupCheckError as e:
         print(e.message)
-        sys.exit(e.exit_code)
+        sys.exit(1)
     except Exception as e:
         print(f"Unknown error: {e}")
         sys.exit(1)

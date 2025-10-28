@@ -305,10 +305,10 @@ You may need to install [patchelf`](https://github.com/NixOS/patchelf).
 
 | Python Version | Known to work? | Comments |
 | --- | --- | --- |
-| 3.10 | Partial | WIP |
-| 3.11 | Yes | Compiling from source, script, executable works. Used in GitHUb Actions. |
+| 3.10 | Yes | Compiling from source, script works. |
+| 3.11 | Yes | Compiling from source, script works. Used in GitHub Actions. |
 | 3.12 | Untested | WIP |
-| 3.13 | Untested | WIP |
+| 3.13 | Partial | Script works. Compiling from source to be tested. |
 | 3.14 | Untested | WIP |
 
 -----

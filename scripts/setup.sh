@@ -10,3 +10,4 @@ python -m venv .venv
 pip install --upgrade pip
 python -m pip install uv
 uv pip install -r requirements-ci.txt
+uv pip install pip-autoremove
