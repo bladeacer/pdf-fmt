@@ -1,7 +1,7 @@
 #!/bin/sh
 set -e
 if [ -d ".venv" ]; then
-    echo "Cleaning up existing '.venv' directory..." | tee -a nuitka-setup.log
+    echo "Cleaning up existing '.venv' directory..."
     rm -rf .venv
 fi
 

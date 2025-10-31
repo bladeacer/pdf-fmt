@@ -25,6 +25,9 @@ filters:
     - '^.*Official.*$'
     - '^.*Private.*$'
     - '^.*All rights reserved.*$'
+     
+    # 4. Academic year e.g. AY2019
+    - '^.*(?:AY\s?)?\d{4}.*$'
 
     # x. Add any other full line patterns here:
     # - '^\s*Confidential Document\s*$'
@@ -33,7 +36,6 @@ filters:
   linting:
     # Defines the language standard to enforce. Options: "en-US", "en-UK", or "none".
     spelling:
-      # enforce_locale: "en-US" 
       enforce_locale: "en-US" 
       ignore_locale_strings:
           - "filter"
@@ -41,6 +43,7 @@ filters:
 # ------------------------------------------------------------------------------
 # 2. CONVERSION
 # Configuration for converting non-PDF documents (requires LibreOffice or pandoc).
+# The output PDF would be in the same directory as the input file.
 # ------------------------------------------------------------------------------
 conversion:
   
@@ -59,11 +62,10 @@ conversion:
 # 3. PROCESSING
 # Configuration during processing
 # ------------------------------------------------------------------------------
-# Uncomment the line immediately below if you wish to enable the processing module
-# processing:
+processing:
   # Number of CPU cores used when processing PDF extraction.
-  # If not set, will default to one less than the number of maximum CPU cores
-  # cores: 8
+  # If set to 0, will default to one less than the number of maximum CPU cores
+  cores: 0
 
 # ------------------------------------------------------------------------------
 # 4. FORMATTING
@@ -108,3 +110,11 @@ actions:
   # If set to a valid string path, the extracted text will be written to that file.
   # write_file: "output.md"
   write_file: ""
+
+  # If set, images will be extracted and written to this directory.
+  # Ensure that the directory is made before running.
+  image_dir: "./images"
+
+  # If set, images over a specific similarity threshold will be discarded.
+  # Set to 90% by default.
+  image_discard_threshold: 90

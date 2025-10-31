@@ -4,7 +4,8 @@ import re
 import subprocess
 import io
 import multiprocessing 
-from typing import List, Dict, Any, Tuple, Callable, Optional, TYPE_CHECKING
+import glob
+from typing import List, Dict, Any, Tuple, Callable, Optional, TYPE_CHECKING, Set
 
 from core import NON_ALPHA_PATTERN, write_content_to_file, DEFAULT_CONVERT_FORMATS, DEFAULT_CHARS_REGEX
 from core import (
@@ -23,6 +24,85 @@ get_american_spelling: Callable[[str], str] = lambda w: w
 get_british_spelling: Callable[[str], str] = lambda w: w
 _CONVERSION_TOOL_CACHE: Optional[str] = None
 
+def _discard_similar_images(output_dir: str, discard_threshold: int) -> None:
+    """
+    Discards images in output_dir that are highly similar to others using perceptual hashing.
+    Similarity is based on the Hamming distance of the pHash.
+
+    Map the percentage threshold (e.g., 90) to a pHash Hamming distance tolerance.
+    An 8x8 pHash returns a max distance of 64. 
+    A difference of 10% (90% similarity) is a distance of ~6.
+
+    We will use a tolerance of 7 for 90% similarity, which is a common safe value for pHash.
+    The actual tolerance is typically calculated as: MAX_DIFF = (100 - discard_threshold) / 10
+    """
+    try:
+        from PIL import Image
+        import imagehash
+    except ImportError:
+        print("Warning: Image similarity check requires 'Pillow' and 'imagehash'. Skipping filter.")
+        return
+
+
+    hash_tolerance = int((100 - discard_threshold) * 0.7)
+    if hash_tolerance < 1: hash_tolerance = 1
+    
+    unique_hashes: Set[imagehash.ImageHash] = set()
+    total_files = 0
+    discarded_count = 0
+    
+    for ext in ('*.png', '*.jpg', '*.jpeg'):
+        for filename in glob.glob(os.path.join(output_dir, ext)):
+            total_files += 1
+            try:
+                with Image.open(filename) as img:
+                    current_hash = imagehash.phash(img, hash_size=8)
+                    
+                    is_duplicate = False
+                    for unique_hash in unique_hashes:
+                        if current_hash - unique_hash <= hash_tolerance:
+                            is_duplicate = True
+                            break
+                    
+                    if is_duplicate:
+                        os.remove(filename)
+                        discarded_count += 1
+                    else:
+                        unique_hashes.add(current_hash)
+                        
+            except Exception:
+                continue
+
+    print(f"INFO: Image similarity check completed. Discarded {discarded_count} out of {total_files} extracted files (Tolerance: {hash_tolerance}).")
+
+
+def _extract_images_subprocess(pdf_path: str, output_dir: str) -> None:
+    """Runs pdf2txt.py in a subprocess to extract images."""
+    print(f"INFO: Attempting to extract images to '{output_dir}'...")
+    print(os.getcwd())
+    
+    command = [
+        "pdf2txt.py", 
+        pdf_path,
+        "--output-dir", output_dir
+    ]
+    
+    try:
+        subprocess.run(
+            command,
+            check=False, 
+            capture_output=True,
+            timeout=120
+        )
+        print("INFO: Image extraction subprocess completed.")
+        
+    except FileNotFoundError:
+        print("Warning: 'pdf2txt.py' command not found. Cannot extract images.")
+        print("Ensure pdfminer.six is installed and its scripts are in your PATH.")
+    except subprocess.TimeoutExpired:
+        print("Warning: Image extraction timed out.")
+    except Exception as e:
+        print(f"Warning: Image extraction failed due to error: {e}")
 
 def _process_page_text_block(
     args: Tuple[
@@ -137,6 +217,19 @@ def execute_main_pipeline(CONFIG: Dict[str, Any]) -> None:
     extracted_content, error_message = extract_text_from_pdf(
         pdf_file_path, CONFIG, ALLOWED_CHARS_PATTERN, COMPILED_FOOTER_PATTERNS
     )
+
+    actions = CONFIG.get("actions", {})
+    image_dir = actions.get("image_dir", None)
+    image_discard_threshold = actions.get("image_discard_threshold", 90)
+
+    if not str(image_discard_threshold).isdigit() and 0 <= int(image_discard_threshold) <= 100:
+        image_discard_threshold = 90
+    
+    if image_dir and isinstance(image_dir, str):
+        resolved_image_dir = os.path.abspath(os.path.expanduser(image_dir))
+        os.makedirs(resolved_image_dir, exist_ok=True) 
+        _extract_images_subprocess(pdf_file_path, resolved_image_dir)
+        _discard_similar_images(resolved_image_dir, image_discard_threshold)
     
     if temp_file_created_flag and os.path.exists(pdf_file_path):
         try:
@@ -360,8 +453,9 @@ def extract_text_from_pdf(
     compiled_footer_patterns: List[re.Pattern]
 ) -> Tuple[Optional[str], Optional[str]]:
     """
-    Extracts text from a PDF using pdfminer.six, applies line filters/linting, 
-    and handles line joining/splitting. Uses multiprocessing for text processing.
+    Extracts raw text from a PDF using pdfminer.six's TextConverter, 
+    applies line filters/linting, and handles line joining/splitting 
+    via a multiprocessing pool.
     """
     if not os.path.exists(pdf_path):
         return None, f"Error: PDF file not found at '{pdf_path}'"
@@ -370,7 +464,13 @@ def extract_text_from_pdf(
 
     raw_text = ""
     processing_config = config.get("processing", {})
-    cores_used = processing_config.get("cores", max(1, os.cpu_count() - 1))
+    max_cores = max(1, os.cpu_count() - 1)
+    cores_used = processing_config.get("cores", max_cores)
+    if str(cores_used).isdigit() and 0 < int(cores_used) < os.cpu_count():
+        cores_used = int(cores_used)
+    else:
+        cores_used = max_cores
+
     try:
         rsrcmgr = PDFResourceManager()
         retstr = io.StringIO()
@@ -387,6 +487,8 @@ def extract_text_from_pdf(
         retstr.close()
     
     except Exception as e:
+        if 'device' in locals() and hasattr(device, 'close'):
+            device.close()
         return None, f"An error occurred during PDF parsing (pdfminer.six): {e}"
 
     page_text_blocks = raw_text.split('\x0c')

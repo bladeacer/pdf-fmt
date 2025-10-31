@@ -1,5 +1,7 @@
 pyyaml
-pdfminer.six
+pdfminer.six[image]
 pyperclip
 breame
 pyyaml
+Pillow
+imagehash

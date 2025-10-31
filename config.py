@@ -41,14 +41,27 @@ def find_config_file() -> Optional[str]:
     return None
 
 def _load_config(file_path: str) -> Dict[str, Any]:
-    """Internal function to load config data from a YAML file without caching logic."""
+    """Internal function to load config data from a YAML file with basic validation."""
     try:
         with open(file_path, 'r', encoding='utf-8') as f:
             config = yaml.safe_load(f)
-            return config if isinstance(config, dict) else {}
-    except Exception as e:
-        print(f"Error: Could not read or parse '{file_path}': {e}. Using defaults.")
+    
+    except yaml.YAMLError as e:
+        print(f"Error: Malformed YAML syntax in '{file_path}': {e}. Using defaults.\n")
         return {}
+    
+    except Exception as e:
+        print(f"Error: Could not read file '{file_path}': {e}. Using defaults.\n")
+        return {}
+
+    if not isinstance(config, dict):
+        if config is None:
+            return {}
+        else:
+            print(f"Error: Configuration file '{file_path}' must have a dictionary (map) as its root element, found '{type(config).__name__}'. Using defaults.\n")
+            return {}
+            
+    return config
 
 def load_config() -> Dict[str, Any]:
     """Loads config data, utilizing modification time caching."""

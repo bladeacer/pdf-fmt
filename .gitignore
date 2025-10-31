@@ -1,9 +1,8 @@
 .venv/
 .venv-build/
 build/
+images/
 __pycache__/
 output.md
-nuitka-build.log
-nuitka-setup.log
-nuitka-crash-report.xml
+nuitka*
 .python-version
