@@ -246,6 +246,9 @@ system clipboard and/or writing to an output file.
 
 For extensive customisation, you can consider create your own
 configuration file. If you do, ensure that it is named `pdf-fmt.yaml`.
+> Note: the configuration schema in this repository reflects the development branch.
+>
+> The binaries might not support some options yet. These are indicated with `[DEV]`.
 
 `pdf-fmt` will look for the configuration file under the following locations.
 

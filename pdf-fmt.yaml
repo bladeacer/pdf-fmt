@@ -34,9 +34,10 @@ filters:
   
   # Configuration for enforcing spelling rules.
   linting:
+
     # Defines the language standard to enforce. Options: "en-US", "en-UK", or "none".
     spelling:
-      enforce_locale: "en-US" 
+      enforce_locale: "en-UK" 
       ignore_locale_strings:
           - "filter"
 
@@ -64,7 +65,9 @@ conversion:
 # ------------------------------------------------------------------------------
 processing:
   # Number of CPU cores used when processing PDF extraction.
-  # If set to 0, will default to one less than the number of maximum CPU cores
+  #
+  # [DEV] If set to 0, will default to one less than the number of maximum CPU cores. 
+  # Do not set to 0 if using binary.
   cores: 0
 
 # ------------------------------------------------------------------------------
@@ -89,12 +92,17 @@ formatting:
   enforce_line_capitalization: false
   
   # Applies a wrapper around content that matches a regex.
-  # REGEX IS NOT CASE SENSITIVE, using Python flavoured regex. For more information, view https://docs.python.org/3/library/re.html
+  # REGEX IS NOT CASE SENSITIVE, using Python flavoured regex.
+  #
+  # For more information, view https://docs.python.org/3/library/re.html
   regex_enclosures:
+
     # Pattern to match the content to be wrapped (e.g., list/array)
     - pattern: '\[.*?\]' 
+
     # The symbol to wrap the matched content with. e.g., '`' will result in `[1, 2, 3]`.
       wrapper: '`' 
+
     # You can specify more than one item
     # - pattern: '\[.*?\]' 
       # wrapper: '`' 
@@ -111,10 +119,13 @@ actions:
   # write_file: "output.md"
   write_file: ""
 
-  # If set, images will be extracted and written to this directory.
-  # Ensure that the directory is made before running.
+  # [DEV] If set, images will be extracted and written to this directory
+  # in addition to standard text extraction.
+  # - Ensure that the directory is made before running.
+  # - Useful for extracting diagrams, tables which you can then use OCR on. 
+  # - Alternatively, you can embed the images in your notes.
   image_dir: "./images"
 
-  # If set, images over a specific similarity threshold will be discarded.
+  # [DEV] If set, output images over a specific similarity threshold will be discarded.
   # Set to 90% by default.
   image_discard_threshold: 90
