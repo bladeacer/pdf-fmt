@@ -109,31 +109,34 @@ def _process_page_text_block(
         int, 
         str, 
         Dict[str, Any], 
-        re.Pattern, 
-        List[re.Pattern]
+        str,
+        List[re.Pattern],
+        str,
+        List[str]
     ]
 ) -> List[str]:
     """
     Helper function to process a single page block's text.
     It re-creates the filter functions locally using the picklable patterns.
     """
-    page_num, page_text_block, config, allowed_chars_pattern, compiled_footer_patterns = args
+    page_num, page_text_block, config, allowed_chars_regex_string, raw_footer_patterns, spelling_locale, ignore_list = args
     
     from core import split_and_format_line
     from core import filter_line_content_factory, is_footer_factory, format_indented_line
+    from core import compile_footer_patterns
 
-    linting_config = config.get("filters", {}).get("linting", {})
+    allowed_chars_pattern = re.compile(allowed_chars_regex_string)
+    compiled_footer_patterns = compile_footer_patterns(raw_footer_patterns)
+
+    filters_config = config.get("filters", {})
+    linting_config = filters_config.get("linting", {})
+
     formatting_config = config.get("formatting", {})
 
     filter_line_content_func: Callable[[str], str] = filter_line_content_factory(allowed_chars_pattern)
     is_footer_func: Callable[[str], bool] = is_footer_factory(compiled_footer_patterns)
     format_indented_line_func: Callable[[str], str] = format_indented_line
 
-    spelling_locale = linting_config.get("spelling", {}).get("enforce_locale", "none").lower()
-    ignore_list = linting_config.get("ignore_locale_strings", [])
-    if not isinstance(ignore_list, list):
-        ignore_list = []
-    
     min_chars = formatting_config.get("min_chars_per_line", 0)
     max_chars = formatting_config.get("max_chars_per_line", 80)
     enforce_cap = formatting_config.get("enforce_line_capitalization", False)
@@ -195,17 +198,29 @@ def execute_main_pipeline(CONFIG: Dict[str, Any]) -> None:
     _import_dependencies()
 
     conversion_config = CONFIG.get("conversion", {})
-    filter_config = CONFIG.get("filters", {})
+    filters_config = CONFIG.get("filters", {})
+    linting_config = filters_config.get("linting", {})
+    spelling_config = linting_config.get("spelling", {})
 
     supported_formats = conversion_config.get("supported_formats", DEFAULT_CONVERT_FORMATS)
 
-    LINE_REGEX_PATTERNS = filter_config.get("footer_regexes", [])
+    LINE_REGEX_PATTERNS = filters_config.get("footer_regexes", [])
     if not isinstance(LINE_REGEX_PATTERNS, list):
         LINE_REGEX_PATTERNS = []
-    CHARS_REGEX_STRING = filter_config.get("allowed_chars_regex", DEFAULT_CHARS_REGEX)
+    CHARS_REGEX_STRING = filters_config.get("allowed_chars_regex", DEFAULT_CHARS_REGEX)
     if not isinstance(CHARS_REGEX_STRING, str):
         CHARS_REGEX_STRING = DEFAULT_CHARS_REGEX
 
+    spelling_locale = spelling_config.get("enforce_locale", "en-US")
+    if not isinstance(spelling_locale, str):
+        print("Warning: 'enforce_locale' in config is not a string. Defaulting to 'en-US'.")
+        spelling_locale = "en-US"
+        
+    ignore_list = spelling_config.get("ignore_locale_strings", [])
+    if not isinstance(ignore_list, list):
+        print("Warning: 'ignore_locale_strings' in config is not a list. Defaulting to empty.")
+        ignore_list = []
+    
     COMPILED_FOOTER_PATTERNS = compile_footer_patterns(LINE_REGEX_PATTERNS)
     ALLOWED_CHARS_PATTERN = re.compile(CHARS_REGEX_STRING)
 
@@ -215,14 +230,19 @@ def execute_main_pipeline(CONFIG: Dict[str, Any]) -> None:
         sys.exit(1)
 
     extracted_content, error_message = extract_text_from_pdf(
-        pdf_file_path, CONFIG, ALLOWED_CHARS_PATTERN, COMPILED_FOOTER_PATTERNS
+        pdf_file_path, CONFIG, CHARS_REGEX_STRING, LINE_REGEX_PATTERNS, spelling_locale, ignore_list
     )
 
     actions = CONFIG.get("actions", {})
     image_dir = actions.get("image_dir", None)
     image_discard_threshold = actions.get("image_discard_threshold", 90)
 
-    if not str(image_discard_threshold).isdigit() and 0 <= int(image_discard_threshold) <= 100:
+    try:
+        threshold_int = int(image_discard_threshold)
+        if not (0 <= threshold_int <= 100):
+            raise ValueError
+        image_discard_threshold = threshold_int
+    except (ValueError, TypeError):
         image_discard_threshold = 90
     
     if image_dir and isinstance(image_dir, str):
@@ -256,9 +276,9 @@ def _import_dependencies():
     try:
         import pyperclip as pc
         pyperclip = pc
-    except ImportError as e:
-        print(f"Error: A required library failed to import: {e}. Please ensure dependencies are installed.")
-        sys.exit(1)
+    except ImportError:
+        print("Warning: 'pyperclip' library not found. Clipboard functionality will be disabled.")
+        pyperclip = None
 
     try:
         from breame.spelling import get_american_spelling as g_a, get_british_spelling as g_b
@@ -269,6 +289,7 @@ def _import_dependencies():
             print("Error: The 'breame' library is required for spelling enforcement.")
             print("Please run: pip install breame")
             sys.exit(1)
+
         def stub_american(word: str) -> str: return word
         def stub_british(word: str) -> str: return word
         get_american_spelling = stub_american
@@ -293,9 +314,9 @@ def enforce_spelling(text: str, locale: str, ignore_list: List[str]) -> str:
             return word
 
         try:
-            if locale == "EN-US":
+            if locale.upper() == "EN-US":
                 base_converted = get_american_spelling(word_to_lookup)
-            elif locale == "EN-UK":
+            elif locale.upper() == "EN-UK":
                 base_converted = get_british_spelling(word_to_lookup)
             else:
                 base_converted = clean_word.lower()
@@ -311,14 +332,18 @@ def clean_and_lint_text(text: str, locale: str, ignore_list: List[str]) -> str:
     """Applies spelling linting and then cleans up spacing."""
     from core import replace_successive_spaces
 
-    if locale in ["en-us", "en-uk"]:
-        text = enforce_spelling(text, locale.upper(), ignore_list)
+    if locale.lower() in ["en-us", "en-uk"]:
+        text = enforce_spelling(text, locale, ignore_list)
     text = replace_successive_spaces(text)
     return text
 
 def copy_content(content: str):
     """Copies content to clipboard."""
     global pyperclip
+    if pyperclip is None:
+        print("Warning: Clipboard copy skipped as 'pyperclip' is not available.")
+        return
+        
     try:
         pyperclip.copy(content)
         print("SUCCESS: Extracted content copied to clipboard.")
@@ -406,7 +431,14 @@ def convert_to_pdf(input_path: str, supported_formats: List[str]) -> Tuple[Optio
             '--outdir',
             output_dir
         ]
-        expected_output = os.path.join(output_dir, base_name + ".pdf")
+        
+        expected_output = os.path.join(output_dir, os.path.basename(input_path).rsplit('.', 1)[0] + ".pdf")
+
+        final_pdf_path = os.path.join(output_dir, base_name + ".pdf")
+        
+        expected_output = final_pdf_path
+        temp_pdf_path = final_pdf_path
+        
     elif conversion_tool == 'pandoc':
         print(f"INFO: Attempting to convert '{file_ext.upper()}' to PDF using Pandoc...")
         command = [
@@ -425,6 +457,11 @@ def convert_to_pdf(input_path: str, supported_formats: List[str]) -> Tuple[Optio
             timeout=120
         )
 
+        if 'soffice' in conversion_tool or 'writer' in conversion_tool:
+            potential_output = os.path.join(output_dir, os.path.basename(input_path).rsplit('.', 1)[0] + ".pdf")
+            if os.path.exists(potential_output):
+                temp_pdf_path = potential_output 
+
         if process.returncode != 0:
             print(f"Error: Conversion failed (Exit Code {process.returncode}).")
             print(f"Tool used: {conversion_tool}")
@@ -432,11 +469,11 @@ def convert_to_pdf(input_path: str, supported_formats: List[str]) -> Tuple[Optio
             if process.stderr: print(f"STDERR: {process.stderr.decode().strip()}")
             return None, None
 
-        if os.path.exists(expected_output):
+        if os.path.exists(temp_pdf_path):
             print("INFO: Conversion successful.")
-            return expected_output, True
+            return temp_pdf_path, True
         else:
-            print(f"Error: Conversion succeeded, but output file was not found at {expected_output}.")
+            print(f"Error: Conversion succeeded, but output file was not found at {temp_pdf_path}.")
             return None, None
 
     except subprocess.TimeoutExpired:
@@ -447,16 +484,19 @@ def convert_to_pdf(input_path: str, supported_formats: List[str]) -> Tuple[Optio
         return None, None
 
 def extract_text_from_pdf(
-    pdf_path: str, 
-    config: Dict[str, Any], 
-    allowed_chars_pattern: re.Pattern, 
-    compiled_footer_patterns: List[re.Pattern]
+    pdf_path: str,
+    config: Dict[str, Any],
+    allowed_chars_regex_string: str,
+    footer_regex_patterns: List[str],
+    spelling_locale: str,
+    ignore_list: List[str]
 ) -> Tuple[Optional[str], Optional[str]]:
     """
     Extracts raw text from a PDF using pdfminer.six's TextConverter, 
     applies line filters/linting, and handles line joining/splitting 
     via a multiprocessing pool.
     """
+
     if not os.path.exists(pdf_path):
         return None, f"Error: PDF file not found at '{pdf_path}'"
 
@@ -466,9 +506,13 @@ def extract_text_from_pdf(
     processing_config = config.get("processing", {})
     max_cores = max(1, os.cpu_count() - 1)
     cores_used = processing_config.get("cores", max_cores)
-    if str(cores_used).isdigit() and 0 < int(cores_used) < os.cpu_count():
-        cores_used = int(cores_used)
-    else:
+    
+    try:
+        cores_int = int(cores_used)
+        if not (0 < cores_int < os.cpu_count()):
+            raise ValueError
+        cores_used = cores_int
+    except (ValueError, TypeError):
         cores_used = max_cores
 
     try:
@@ -498,8 +542,10 @@ def extract_text_from_pdf(
             page_num, 
             page_text_block, 
             config, 
-            allowed_chars_pattern, 
-            compiled_footer_patterns
+            allowed_chars_regex_string, 
+            footer_regex_patterns,
+            spelling_locale,
+            ignore_list
         )
         for page_num, page_text_block in enumerate(page_text_blocks)
     ]

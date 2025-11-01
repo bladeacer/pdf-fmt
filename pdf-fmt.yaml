@@ -38,6 +38,7 @@ filters:
     # Defines the language standard to enforce. Options: "en-US", "en-UK", or "none".
     spelling:
       enforce_locale: "en-UK" 
+      # [DEV] Fixed to work, is currently broken in binary.
       ignore_locale_strings:
           - "filter"
 
