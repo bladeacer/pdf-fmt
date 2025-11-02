@@ -28,6 +28,8 @@ filters:
      
     # 4. Academic year e.g. AY2019
     - '^.*(?:AY\s?)?\d{4}.*$'
+    # 5. Document version
+    - '^.*v\d\.\d$'
 
     # x. Add any other full line patterns here:
     # - '^\s*Confidential Document\s*$'
@@ -41,6 +43,7 @@ filters:
       # [DEV] Fixed to work, is currently broken in binary.
       ignore_locale_strings:
           - "filter"
+          - "connection"
 
 # ------------------------------------------------------------------------------
 # 2. CONVERSION
@@ -129,4 +132,4 @@ actions:
 
   # [DEV] If set, output images over a specific similarity threshold will be discarded.
   # Set to 90% by default.
-  image_discard_threshold: 90
+  image_discard_threshold: 97.5

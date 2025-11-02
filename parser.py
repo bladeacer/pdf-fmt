@@ -302,16 +302,15 @@ def enforce_spelling(text: str, locale: str, ignore_list: List[str]) -> str:
     global get_american_spelling, get_british_spelling
     from core import preserve_case
 
-    ignore_set = {s.lower() for s in ignore_list}
-
     def process_word(word: str) -> str:
         clean_word = NON_ALPHA_PATTERN.sub('', word)
         if not clean_word: return word
 
-        word_to_lookup = clean_word.lower()
+        word_to_lookup = clean_word
 
-        if word_to_lookup in ignore_set:
-            return word
+        for s in ignore_list:
+            if word_to_lookup.lower() in s.lower():
+                return word
 
         try:
             if locale.upper() == "EN-US":
@@ -319,7 +318,7 @@ def enforce_spelling(text: str, locale: str, ignore_list: List[str]) -> str:
             elif locale.upper() == "EN-UK":
                 base_converted = get_british_spelling(word_to_lookup)
             else:
-                base_converted = clean_word.lower()
+                base_converted = clean_word
         except ValueError:
             base_converted = clean_word
 
