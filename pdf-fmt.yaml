@@ -30,6 +30,8 @@ filters:
     - '^.*(?:AY\s?)?\d{4}.*$'
     # 5. Document version
     - '^.*v\d\.\d$'
+    # 6. Bare page number e.g. Page 1 out of 10.
+    - '^Page\s\d.*$'
 
     # x. Add any other full line patterns here:
     # - '^\s*Confidential Document\s*$'
@@ -128,8 +130,8 @@ actions:
   # - Ensure that the directory is made before running.
   # - Useful for extracting diagrams, tables which you can then use OCR on. 
   # - Alternatively, you can embed the images in your notes.
-  image_dir: "./images"
+  # image_dir: "./images"
 
   # [DEV] If set, output images over a specific similarity threshold will be discarded.
   # Set to 90% by default.
-  image_discard_threshold: 97.5
+  image_discard_threshold: 98

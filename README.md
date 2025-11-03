@@ -22,24 +22,94 @@ It is useful for converting raw PDF dumps into clean, formatted text.
 Note that `pdf-fmt` is **under active development**, you might encounter bugs
 and issues.
 
+### Features
+
+* Raw text extraction
+  * Copy to clipboard and/or write to file
+* Extensive configuration schema
+  * See [configuration](#configuration)
+* Supports numerous formats
+  * See [handling non-PDF formats](#handling-non-pdf-formats)
+* Image extraction
+  * Bring your own OCR
+  * Under development
+* and many others to come...
+
 ### Why I made this
 
 There are plenty of PDF tooling out there, but they seems to be geared towards
 OCR and generally do not help with extracting and processing the output text.
 
-Personally, I use it to collate lecture slides for note taking. I hope that it
-would be useful for you as well.
+Personally, I use it to collate lecture slides for note taking and knowledge
+management. I hope that it would be useful for you as well.
 
-### Note
+### What `pdf-fmt` is not
 
 This is **not an OCR** (Optical Character Recognition) tool. It only processes
 selectable text (with your cursor) found in the PDF structure.
 
-If your file contains images of text, please use an external OCR tool first.
+If your file contains images of text, you can use the image extraction feature
+before passing the output images to your OCR. This feature is currently under development.
 
------
+### Handling non PDF formats
+
+For converting non-PDF files (like `.docx`, `.pptx`, `.odt`) to PDF before
+extraction, either **dependency** needs to be installed and accessible in your `$PATH`:
+
+* [**LibreOffice's CLI** \(`soffice` or similar\)](https://www.libreoffice.org/)
+* [**Pandoc**](https://pandoc.org/)
 
 # Quick Start
+
+## Download from Release Page (Recommended)
+
+For **Windows and Linux users**, You can get the compiled binary
+[the latest release](https://github.com/bladeacer/pdf-fmt/releases/latest).
+
+After downloading, Open PowerShell or the terminal on Linux.
+
+On Windows, run:
+
+```ps1
+cd Downloads
+mv pdf-fmt-x64-0.6.1.exe pdf-fmt.exe
+./pdf-fmt.exe
+```
+
+For Windows users, remember to [set execution policy](https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.security/set-executionpolicy).
+
+On Linux, run:
+
+```bash
+cd Downloads
+mv pdf-fmt-x64-0.6.1 pdf-fmt
+chmod +x ./pdf-fmt
+./pdf-fmt
+```
+
+You can also choose to do the following after this step:
+
+* Adding it to your system `$PATH`
+* Set an alias pointing to the binary or renaming it manually
+* Creating the [configuration file](#configuration)
+
+## About Downloaded Binaries
+
+* Choose the binary **corresponding to your operating system**
+* macOS is not supported.
+
+If you wish to get an updated version of the executable, download the newer
+latest version and remove the old executable file.
+> If you wish to use `pdf-fmt` on macOS, you can use the script installer or
+> compile from source instead.
+
+### About Versioning
+
+The version number might be different from the one in the above example.
+
+* We encourage using the latest version, especially when major new features are added
+
+## Script Installer
 
 You can use `pdf-fmt` via the script installer,
 which sets up a isolated
@@ -53,10 +123,13 @@ to manage all dependencies.
   * To confirm, run `which git` and `which python` in a Linux/macOS terminal
   * For Windows users, run `where git` and `where python` in Command Prompt
 
-If you **[only downloading the compiled binaries](#download-from-release-page)**,
-you can ignore this part.
+If you **only downloading the compiled binaries**, you can ignore this part.
 
-### Installation via script
+These prerequisites also apply to compiling from source.
+
+* Other prerequisites are documented in the section on [compiling from source](#compile-from-source)
+
+### Reviewing the scripts
 
 * The script will prompt for confirmation before starting the installation
 
@@ -64,21 +137,6 @@ you can ignore this part.
 call in a browser.** E.g. `https://raw.githubusercontent.com/...`
 
 * Alternatively, you can view them [here](./scripts/)
-
-### Handling non PDF formats
-
-For converting non-PDF files (like `.docx`, `.pptx`, `.odt`) to PDF before
-extraction, either **system dependencies** needs to be installed and
-accessible in your `$PATH`:
-
-* [**LibreOffice's CLI** \(`soffice` or similar\)](https://www.libreoffice.org/)
-* [**Pandoc**](https://pandoc.org/)
-
-### Local compilation
-
-For building the executable, you would need [the following `nuitka` requirements](https://github.com/Nuitka/Nuitka).
-
-## Script Installer (recommended)
 
 ### Windows
 
@@ -105,8 +163,6 @@ chmod +x install.sh
 ./install.sh
 ```
 
------
-
 ## Using the Script Installer
 
 The installer places the Python script inside your new `.venv` folder.
@@ -132,61 +188,15 @@ The output is printed to the terminal and **copied to your clipboard** by defaul
 To update the script, run **`git pull`** in the repository the script creates
 under the `pdf-fmt` directory.
 
------
-
-## Download from Release Page
-
-For **Windows and Linux users**, You can get the compiled binary
-[the latest release](https://github.com/bladeacer/pdf-fmt/releases/latest).
-
-After downloading, Open PowerShell or the terminal on Linux.
-
-On Windows, run:
-
-```ps1
-cd Downloads
-mv pdf-fmt-x64-1.5.1.exe pdf-fmt.exe
-./pdf-fmt.exe
-```
-
-For Windows users, remember to [set execution policy](https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.security/set-executionpolicy).
-
-On Linux, run:
-
-```bash
-cd Downloads
-mv pdf-fmt-x64-1.5.1 pdf-fmt
-chmod +x ./pdf-fmt
-./pdf-fmt
-```
-
-You can also choose to do the following after this step:
-
-* Adding it to your system `$PATH`
-* Set an alias pointing to the binary or renaming it manually
-* Creating the [configuration file](#configuration)
-
-
-## Note: Downloaded Binaries
-
-* Choose the binary **corresponding to your operating system**
-* macOS is not supported
-
-If you wish to get an updated version of the executable, download the newer
-latest version and remove the old executable file.
-
------
-
 ## Compile from Source
 
-To be added once confirmed to be working.
 Requires running the script installer or the following commands. This example
 assumes the use of Linux. See the [script usage example](#using-the-script-installer)
 on how to activate virtual environment for each OS.
 
 It is recommended to use [py-env](https://github.com/pyenv/pyenv) to manage
 different versions of Python. It is also recommended to install [ccache](https://github.com/ccache/ccache)
-for compiled binaries to be cached.
+for compiled binaries to be cached. You would also need [the following `nuitka` requirements](https://github.com/Nuitka/Nuitka).
 
 ### Pyenv setup
 
@@ -225,9 +235,7 @@ compiling is done.
 Compilation logs will be found at `nuitka-build.log`.
 Crash reports would be found at `nuitka-crash-report.xml`.
 
-Alternatively, you can call [this script on Linux or macOS](./scripts/compile.sh)
-
------
+Alternatively, you can call [this script on Linux or macOS](./scripts/compile.sh).
 
 ## Configuration
 
@@ -235,20 +243,20 @@ The configuration options available are documented in the
 [`pdf-fmt.yaml`](./pdf-fmt.yaml) file.
 
 * **`filters`**: Regex rules for character exclusion and pattern-based filtering
-  * e.g. footers. Includes optional spelling enforcement.
+  * excluding footers matching a regex pattern.
+  * includes optional spelling enforcement (UK or US English).
 * **`conversion`**: Lists supported non-PDF formats (see
 [handling non\-PDF formats](#handling-non-pdf-formats)).
 * **`formatting`**: Controls line re-wrapping, indentation conversion
-  * e.g. converting single-space indents to Markdown lists, enforcing
-  capitalisation at the start of each line.
-* **`actions`**: Defines post-extraction behaviour, such as copying to the
-system clipboard and/or writing to an output file.
+  * converting single-space indents to Markdown lists
+  * enforcing capitalisation at the start of each line.
+* **`actions`**: Defines post-extraction behaviour
+  * copying to the system clipboard and/or write to an output file.
 
 For extensive customisation, you can consider create your own
 configuration file. If you do, ensure that it is named `pdf-fmt.yaml`.
-> Note: the configuration schema in this repository reflects the development branch.
->
-> The binaries might not support some options yet. These are indicated with `[DEV]`.
+
+### Where to place the configuration file
 
 `pdf-fmt` will look for the configuration file under the following locations.
 
@@ -258,7 +266,12 @@ configuration file. If you do, ensure that it is named `pdf-fmt.yaml`.
   * `$XDG_CONFIG_HOME` or `~/.config` if you are on Linux
 * The current working directory of the script
 
------
+### Development status
+
+Note: the configuration schema in this repository reflects the development branch.
+
+The released binaries might not support some options yet. These are indicated
+with `[DEV]`.
 
 ## Supported platforms
 
@@ -283,9 +296,9 @@ compiling from source.
 | **Arch Linux x64** | X11 | `glibc` | Untested | Contributions are welcome |
 | **Debian 13 x64 (glibc)** | Wayland | `glibc` | Untested | Contributions are welcome |
 | **Debian 13 x86 (glibc)** | X11 | `glibc` | Untested | Contributions are welcome |
-| **EndeavourOS x64 (Arch-based)** | Wayland | `glibc` | Untested | Contributions are welcome. |
+| **EndeavourOS x64 (Arch-based)** | Wayland | `glibc` | Partial | Script works out of the box. Contributions are welcome for binary/compiling from source |
 | **EndeavourOS x64 (Arch-based)** | X11 | `glibc` | Yes | Binary/script/compiling from source works. |
-| **Fedora 42 x64 (RPM-based)** | Wayland | `glibc` | Untested | Contributions are welcome |
+| **Fedora 42 x64 (RPM-based)** | Wayland | `glibc` | Partial | Binary works out of the box. Contributions are welcome for script/compiling from source |
 | **Fedora 42 x64 (RPM-based)** | X11 | `glibc` | Untested | Contributions are welcome |
 | **FreeBSD 14 x64** | X11 | `BSD libc` | Untested | Contributions are welcome |
 | **NetBSD 10 x64** | X11 | `BSD libc` | Untested | Contributions are welcome |
@@ -296,13 +309,15 @@ compiling from source.
 | **Windows 10 x86** | N/A | `MSVCRT` (via `MSVC`/`MinGW`) | Untested | Contributions are welcome |
 | **Windows 11 x64** | N/A | `MSVCRT` (via `MSVC`/`MinGW`) | Partial | Binary works out of the box. Contributions are welcome for script/compiling from source |
 
-
 ### Note: Linux users
+
 To check the C Standard Library used on Linux, run `ldd --version`.
 
 To check the Display Protocol currently used on Linux, run `echo $XDG_SESSION_TYPE`.
 
-You may need to install [patchelf`](https://github.com/NixOS/patchelf).
+You may need to install [patchelf](https://github.com/NixOS/patchelf)
+
+* See [Compile from source](#compile-from-source) for more details.
 
 ## Supported Python Versions
 
@@ -311,10 +326,7 @@ You may need to install [patchelf`](https://github.com/NixOS/patchelf).
 | 3.10 | Yes | Compiling from source, script works. |
 | 3.11 | Yes | Compiling from source, script works. Used in GitHub Actions. |
 | 3.12 | Untested | WIP |
-| 3.13 | Partial | Script works. Compiling from source to be tested. |
-| 3.14 | Untested | WIP |
-
------
+| 3.13 | Partial | Compiling from source, script works. |
 
 ## Contributing
 
@@ -332,25 +344,24 @@ chmod +x scripts/setup.sh
 ./scripts/dev.sh
 ```
 
------
-
 ## Benchmarks
+
 TBC
 
-### Note: Compatibility
-The script installer and compiling from source should work for all major
+### A note on Compatibility
+
+The script, compiled binaries and compiling from source should work for all major
 operating systems that support `Git`, `Python`,
 [`pdfminer.six`](https://github.com/pdfminer/pdfminer.six) and
 [`pyperclip`](https://github.com/asweigart/pyperclip).
+
 > Note: These dependencies are slightly larger than their C equivalents, though this
 > is a calculated trade off.
-
-
------
 
 ## Tests
 
 ### Unit Tests
+
 TBC
 
 ### Test GitHub Action
@@ -363,13 +374,12 @@ chmod +x act.sh
 ./act.sh
 ```
 
------
-
 ## License
 
 GPLv3, See [license file](./LICENSE) for details.
 
 ### License Notice
+
 This program is free software: you can redistribute it and/or modify it under
 the terms of the GNU General Public License as published by the Free Software
 Foundation, either version 3 of the License, or (at your option) any later version.
