@@ -12,6 +12,7 @@ from core import (
     compile_footer_patterns, filter_line_content_factory,
     format_indented_line, is_footer_factory
 )
+import pdf2image
 from startup import setup_cli, IS_CI_BUILD
 
 from pdfminer.pdfpage import PDFPage
@@ -23,6 +24,8 @@ pyperclip = None
 get_american_spelling: Callable[[str], str] = lambda w: w
 get_british_spelling: Callable[[str], str] = lambda w: w
 _CONVERSION_TOOL_CACHE: Optional[str] = None
+FALLBACK_FORMAT = "JPEG" 
+PDFMINER_IMG_REGEX = re.compile(r'(.+?)-p(\d+)-\d+\.')
 
 def _discard_similar_images(output_dir: str, discard_threshold: int) -> None:
     """
@@ -76,33 +79,41 @@ def _discard_similar_images(output_dir: str, discard_threshold: int) -> None:
     print(f"INFO: Image similarity check completed. Discarded {discarded_count} out of {total_files} extracted files (Tolerance: {hash_tolerance}).")
 
 
-def _extract_images_subprocess(pdf_path: str, output_dir: str) -> None:
-    """Runs pdf2txt.py in a subprocess to extract images."""
-    print(f"INFO: Attempting to extract images to '{output_dir}'...")
-    print(os.getcwd())
+def _extract_and_format_images(
+    pdf_path: str, 
+    output_dir: str,
+    format_list: List[str],
+    fallback_size: int,
+    cores_used: int
+) -> None:
+    """
+    Extracts images from PDF and post-processes them (format/fallback/rename).
+    This function is designed to be run in a separate multiprocessing.Process.
+    """
+    print(f"INFO: Starting image extraction and formatting to '{output_dir}'...")
     
-    command = [
-        "pdf2txt.py", 
-        pdf_path,
-        "--output-dir", output_dir
-    ]
+    success = pdf2image.extract_images_from_pdf(
+        pdf_path=pdf_path, 
+        output_dir=output_dir,
+        laparams=None, 
+        password="", 
+        disable_caching=False, 
+        rotation=0,
+    )
     
-    try:
-        subprocess.run(
-            command,
-            check=False, 
-            capture_output=True,
-            timeout=120
+    if success:
+        print("INFO: Image extraction complete. Applying post-processing...")
+        pdf2image.post_process_images(
+            pdf_path=pdf_path,
+            output_dir=output_dir, 
+            format_list=format_list,
+            fallback_size_kb=fallback_size,
+            cores_used=cores_used
         )
-        print("INFO: Image extraction subprocess completed.")
-        
-    except FileNotFoundError:
-        print("Warning: 'pdf2txt.py' command not found. Cannot extract images.")
-        print("Ensure pdfminer.six is installed and its scripts are in your PATH.")
-    except subprocess.TimeoutExpired:
-        print("Warning: Image extraction timed out.")
-    except Exception as e:
-        print(f"Warning: Image extraction failed due to error: {e}")
+        print("INFO: Image post-processing and renaming complete.")
+    else:
+        print("Warning: Image extraction failed or was partially successful.")
+
 
 def _process_page_text_block(
     args: Tuple[
@@ -232,13 +243,14 @@ def execute_main_pipeline(CONFIG: Dict[str, Any]) -> None:
     if not pdf_file_path:
         sys.exit(1)
 
-    extracted_content, error_message = extract_text_from_pdf(
-        pdf_file_path, CONFIG, CHARS_REGEX_STRING, LINE_REGEX_PATTERNS, spelling_locale, ignore_list
-    )
-
     actions = CONFIG.get("actions", {})
     image_dir = actions.get("image_dir", None)
     image_discard_threshold = actions.get("image_discard_threshold", 90)
+    image_process = None
+
+    extracted_content, error_message = extract_text_from_pdf(
+        pdf_file_path, CONFIG, CHARS_REGEX_STRING, LINE_REGEX_PATTERNS, spelling_locale, ignore_list
+    )
 
     try:
         threshold_int = int(image_discard_threshold)
@@ -247,11 +259,57 @@ def execute_main_pipeline(CONFIG: Dict[str, Any]) -> None:
         image_discard_threshold = threshold_int
     except (ValueError, TypeError):
         image_discard_threshold = 90
+
+    processing_config = CONFIG.get("processing", {})
+    max_cores = max(1, os.cpu_count() - 1)
+    cores_used = processing_config.get("cores", max_cores)
+    
+    try:
+        cores_int = int(cores_used)
+        if not (0 < cores_int < os.cpu_count()):
+            raise ValueError
+        cores_used = cores_int
+    except (ValueError, TypeError):
+        cores_used = max_cores
+
     
     if image_dir and isinstance(image_dir, str):
         resolved_image_dir = os.path.abspath(os.path.expanduser(image_dir))
         os.makedirs(resolved_image_dir, exist_ok=True) 
-        _extract_images_subprocess(pdf_file_path, resolved_image_dir)
+
+        image_format_setting = actions.get('image_format', ['PNG'])
+        
+        if isinstance(image_format_setting, str):
+            image_formats = [image_format_setting]
+        elif isinstance(image_format_setting, list):
+            image_formats = image_format_setting if image_format_setting else ['PNG']
+        else:
+            print("Warning: image_format must be a string or list. Defaulting to ['PNG'].")
+            image_formats = ['PNG']
+        
+        fallback_size = actions.get('fallback_image_kb', 2000)
+
+        print("INFO: Starting concurrent image extraction process...")
+        image_process = multiprocessing.Process(
+            target=_extract_and_format_images,
+            args=(
+                pdf_file_path,  
+                resolved_image_dir,  
+                image_formats,
+                fallback_size,
+                cores_used
+            )
+        )
+        image_process.start()
+
+    if image_process:
+        print("INFO: Waiting for concurrent image extraction to finish...")
+        image_process.join(timeout=120) 
+        
+        if image_process.is_alive():
+             print("Warning: Image extraction process timed out or failed to join. Terminating.")
+             image_process.terminate()
+             
         _discard_similar_images(resolved_image_dir, image_discard_threshold)
     
     if temp_file_created_flag and os.path.exists(pdf_file_path):

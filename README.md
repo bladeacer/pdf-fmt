@@ -59,6 +59,14 @@ extraction, either **dependency** needs to be installed and accessible in your `
 * [**LibreOffice's CLI** \(`soffice` or similar\)](https://www.libreoffice.org/)
 * [**Pandoc**](https://pandoc.org/)
 
+### Known issues
+
+> Cannot set gray non-stroke color because /'Pattern x' is an invalid float value
+
+You can ignore this error or make use of [qpdf](https://github.com/qpdf/qpdf)
+or [GhostScript](https://ghostscript.com/releases/gsdnld.html) to convert your
+PDF before running `pdf-fmt`.
+
 # Quick Start
 
 ## Download from Release Page (Recommended)

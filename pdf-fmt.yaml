@@ -131,8 +131,19 @@ actions:
   # - Ensure that the directory is made before running.
   # - Useful for extracting diagrams, tables which you can then use OCR on. 
   # - Alternatively, you can embed the images in your notes.
-  # image_dir: "./images"
+  image_dir: "./images"
+  
+  # [DEV] The target image format for extracted images. Can be a single string (e.g., "png") 
+  # or a list for preferred formats. The first item is used by default.
+  image_format:
+    - "png"
+    - "webp"
+    - "jpeg"
+ 
+  # [DEV] If an extracted image exceeds this size, it will fall back to the next specified format.
+  # Defaults to 2000 kB or 2 MB
+  fallback_image_kb: 2000
 
   # [DEV] If set, output images over a specific similarity threshold will be discarded.
-  # Set to 90% by default.
-  image_discard_threshold: 98
+  # Set to 95% by default.
+  image_discard_threshold: 95
