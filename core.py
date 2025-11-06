@@ -70,7 +70,7 @@ def preserve_case(original_word: str, translated_word: str) -> str:
     if original_word.isupper():
         return translated_word.upper()
 
-    if original_word[0].isupper() and original_word[1:].islower():
+    if original_word[0].isupper():
         return translated_word.capitalize()
 
     return translated_word

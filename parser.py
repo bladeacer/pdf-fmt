@@ -121,6 +121,9 @@ def _process_page_text_block(
     """
     page_num, page_text_block, config, allowed_chars_regex_string, raw_footer_patterns, spelling_locale, ignore_list = args
     
+    if not page_text_block.strip():
+        return []
+    
     from core import split_and_format_line
     from core import filter_line_content_factory, is_footer_factory, format_indented_line
     from core import compile_footer_patterns
@@ -302,27 +305,33 @@ def enforce_spelling(text: str, locale: str, ignore_list: List[str]) -> str:
     global get_american_spelling, get_british_spelling
     from core import preserve_case
 
+    ignore_set = {s.lower() for s in ignore_list}
+
     def process_word(word: str) -> str:
         clean_word = NON_ALPHA_PATTERN.sub('', word)
         if not clean_word: return word
 
-        word_to_lookup = clean_word
+        word_to_lookup_lower = clean_word.lower()
 
-        for s in ignore_list:
-            if word_to_lookup.lower() in s.lower():
-                return word
+        if word_to_lookup_lower in ignore_set:
+            return word
 
         try:
             if locale.upper() == "EN-US":
-                base_converted = get_american_spelling(word_to_lookup)
+                base_converted = get_american_spelling(word_to_lookup_lower)
             elif locale.upper() == "EN-UK":
-                base_converted = get_british_spelling(word_to_lookup)
+                base_converted = get_british_spelling(word_to_lookup_lower)
             else:
                 base_converted = clean_word
         except ValueError:
             base_converted = clean_word
 
-        case_preserved_word = preserve_case(clean_word, base_converted)
+        if base_converted == word_to_lookup_lower:
+            final_word_base = clean_word
+        else:
+            final_word_base = base_converted
+
+        case_preserved_word = preserve_case(clean_word, final_word_base)
         return word.replace(clean_word, case_preserved_word, 1)
 
     return " ".join(process_word(word) for word in text.split())

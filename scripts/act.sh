@@ -1,3 +1,6 @@
+#!/bin/sh
+set -e
+
 act push \
     --job build \
     --eventpath ../.github/workflows/push_tag_event.json \

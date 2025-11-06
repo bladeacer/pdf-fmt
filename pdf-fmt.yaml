@@ -46,6 +46,7 @@ filters:
       ignore_locale_strings:
           - "filter"
           - "connection"
+          - "categorical"
 
 # ------------------------------------------------------------------------------
 # 2. CONVERSION

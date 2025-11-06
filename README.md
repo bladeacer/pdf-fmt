@@ -362,7 +362,14 @@ operating systems that support `Git`, `Python`,
 
 ### Unit Tests
 
-TBC
+Using `unittest`, which is of Python's standard library. You can make use of the
+script installer for cloning the repository.
+
+```py
+python -m unittest discover -sv tests
+```
+
+Alternatively, you can run the [script](./scripts/tests.sh).
 
 ### Test GitHub Action
 
