@@ -107,10 +107,10 @@ formatting:
   regex_enclosures:
 
     # Pattern to match the content to be wrapped (e.g., list/array)
-    - pattern: '\[.*?\]' 
+    # - pattern: '\[.*?\]' 
 
     # The symbol to wrap the matched content with. e.g., '`' will result in `[1, 2, 3]`.
-      wrapper: '`' 
+      # wrapper: '`' 
 
     # You can specify more than one item
     # - pattern: '\[.*?\]' 

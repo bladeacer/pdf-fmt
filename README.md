@@ -74,6 +74,10 @@ Upstream locale enforcement libraries may yield inaccurate words. I am working
 on adding a configuration option to define your own locale mappings to override
 Breame's.
 
+### Project Status
+
+`pdf-fmt` is currently undergoing a major rewrite. Stay tuned.
+
 # Quick Start
 
 ## Download from Release Page (Recommended)
