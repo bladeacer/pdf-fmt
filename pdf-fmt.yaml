@@ -34,7 +34,7 @@ filters:
     - '^Page\s\d.*$'
 
     # x. Add any other full line patterns here:
-    # - '^\s*Confidential Document\s*$'
+    # - '^.*Confidential Document.*$'
   
   # Configuration for enforcing spelling rules.
   linting:
@@ -43,6 +43,8 @@ filters:
     spelling:
       enforce_locale: "en-UK" 
       # [DEV] Fixed to work, is currently broken in binary.
+      # You can specify a set of locale strings to ignore. By default, the localisation library
+      # used has some inaccuracies regarding localising some words.
       ignore_locale_strings:
           - "filter"
           - "connection"
@@ -96,7 +98,7 @@ formatting:
   page_separator: "___" 
   
   # If true, ensures the first alphabetic character of every line is capitalized.
-  enforce_line_capitalization: false
+  enforce_line_capitalization: true
   
   # Applies a wrapper around content that matches a regex.
   # REGEX IS NOT CASE SENSITIVE, using Python flavoured regex.

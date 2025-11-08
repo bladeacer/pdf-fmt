@@ -67,6 +67,13 @@ You can ignore this error or make use of [qpdf](https://github.com/qpdf/qpdf)
 or [GhostScript](https://ghostscript.com/releases/gsdnld.html) to convert your
 PDF before running `pdf-fmt`.
 
+> Inaccurate locale enforcement e.g. localization -> localization even
+> with UK locale enforcement enabled.
+
+Upstream locale enforcement libraries may yield inaccurate words. I am working
+on adding a configuration option to define your own locale mappings to override
+Breame's.
+
 # Quick Start
 
 ## Download from Release Page (Recommended)
@@ -302,17 +309,17 @@ compiling from source.
 | **Alpine Linux x64 (musl-based)** | X11 | `musl` | Untested | Contributions are welcome |
 | **Arch Linux x64** | Wayland | `glibc` | Untested | Contributions are welcome |
 | **Arch Linux x64** | X11 | `glibc` | Untested | Contributions are welcome |
-| **Debian 13 x64 (glibc)** | Wayland | `glibc` | Untested | Contributions are welcome |
-| **Debian 13 x86 (glibc)** | X11 | `glibc` | Untested | Contributions are welcome |
+| **Debian x64 (glibc)** | Wayland | `glibc` | Untested | Contributions are welcome |
+| **Debian x86 (glibc)** | X11 | `glibc` | Untested | Contributions are welcome |
 | **EndeavourOS x64 (Arch-based)** | Wayland | `glibc` | Partial | Script works out of the box. Contributions are welcome for binary/compiling from source |
 | **EndeavourOS x64 (Arch-based)** | X11 | `glibc` | Yes | Binary/script/compiling from source works. |
-| **Fedora 42 x64 (RPM-based)** | Wayland | `glibc` | Partial | Binary works out of the box. Contributions are welcome for script/compiling from source |
-| **Fedora 42 x64 (RPM-based)** | X11 | `glibc` | Untested | Contributions are welcome |
-| **FreeBSD 14 x64** | X11 | `BSD libc` | Untested | Contributions are welcome |
-| **NetBSD 10 x64** | X11 | `BSD libc` | Untested | Contributions are welcome |
-| **OpenBSD 7.8 x64** | X11 | `BSD libc` | Untested | Contributions are welcome |
-| **Ubuntu 24.04 LTS x64 (Debian-based)** | Wayland | `glibc` | Untested | Contributions are welcome |
-| **Ubuntu 24.04 LTS x64 (Debian-based)** | X11 | `glibc` | Untested | Contributions are welcome |
+| **Fedora 43 x64 (RPM-based)** | Wayland | `glibc` | Partial | Binary works out of the box. Contributions are welcome for script/compiling from source |
+| **Fedora x64 (RPM-based)** | X11 | `glibc` | Untested | Contributions are welcome |
+| **FreeBSD stable x64** | X11 | `BSD libc` | Untested | Contributions are welcome |
+| **NetBSD x64** | X11 | `BSD libc` | Untested | Contributions are welcome |
+| **OpenBSD x64** | X11 | `BSD libc` | Untested | Contributions are welcome |
+| **Ubuntu LTS x64 (Debian-based)** | Wayland | `glibc` | Untested | Contributions are welcome |
+| **Ubuntu LTS x64 (Debian-based)** | X11 | `glibc` | Untested | Contributions are welcome |
 | **macOS 14 (Sonoma)** | N/A | `libSystem` (BSD `libc`) | Untested | Contributions are welcome |
 | **Windows 10 x86** | N/A | `MSVCRT` (via `MSVC`/`MinGW`) | Untested | Contributions are welcome |
 | **Windows 11 x64** | N/A | `MSVCRT` (via `MSVC`/`MinGW`) | Partial | Binary works out of the box. Contributions are welcome for script/compiling from source |
@@ -411,7 +418,10 @@ this program. If not, see https://www.gnu.org/licenses/.
 Existing PDF tooling for inspiration, LibreOffice CLI.
 Nuitka for compilation, GitHub for hosting and CI.
 
-My friend Potato for testing the Windows binary.
+My friend Potato for testing the binary on Windows.
+
+My friend [Floodlight](https://github.com/Gonzalo-D-Sales) for testing the
+binary on Fedora.
 
 The code of conduct was adopted from the
 [Contributor Covenant](https://www.contributor-covenant.org/).
