@@ -4,7 +4,7 @@
 import sys
 from typing import Dict, Any
 
-from startup import check_venv, check_not_root, StartupCheckError 
+from pdf_fmt.startup import check_venv, check_not_root, StartupCheckError 
 
 def main():
     """Main execution logic for the local script."""
@@ -20,7 +20,7 @@ def main():
         sys.exit(1)
 
     try:
-        import config
+        from pdf_fmt import config
         from parser import execute_main_pipeline
         
         CONFIG: Dict[str, Any] = config.load_config()
