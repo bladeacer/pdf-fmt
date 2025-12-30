@@ -13,7 +13,7 @@ class StartupCheckError(Exception):
         self.exit_code = exit_code
         super().__init__(self.message)
 
-SCRIPT_VERSION = "0.6.0" 
+SCRIPT_VERSION = "0.6.1" 
 IS_CI_BUILD = os.environ.get('PDF_FMT_CI_BUILD', '0') == '1'
 IS_NUITKA_COMPILED = "__compiled__" in globals()
 

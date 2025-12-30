@@ -22,6 +22,10 @@ It is useful for converting raw PDF dumps into clean, formatted text.
 Note that `pdf-fmt` is **under active development**, you might encounter bugs
 and issues.
 
+### Project Status
+
+`pdf-fmt` is currently undergoing a major rewrite. Stay tuned.
+
 ### Features
 
 * Raw text extraction
@@ -73,10 +77,6 @@ PDF before running `pdf-fmt`.
 Upstream locale enforcement libraries may yield inaccurate words. I am working
 on adding a configuration option to define your own locale mappings to override
 Breame's.
-
-### Project Status
-
-`pdf-fmt` is currently undergoing a major rewrite. Stay tuned.
 
 # Quick Start
 

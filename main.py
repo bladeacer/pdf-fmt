@@ -4,13 +4,14 @@
 import sys
 from typing import Dict, Any
 
-from pdf_fmt.startup import check_not_root, StartupCheckError 
+from pdf_fmt.startup import check_venv, check_not_root, StartupCheckError 
 
 def main():
     """Main execution logic for the local script."""
     
     try:
         check_not_root()
+        check_venv()
         
     except StartupCheckError as e:
         print(e.message)
@@ -35,4 +36,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-

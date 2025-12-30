@@ -29,7 +29,7 @@ python -m venv .venv
 . ./.venv/bin/activate
 
 python -m pip install uv
-uv pip install -r requirements-ci.txt
+uv sync
 
 echo ""
 echo "Installation complete!"

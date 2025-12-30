@@ -54,8 +54,8 @@ Write-Host "Activating environment and installing uv..."
 python -m pip install uv
 
 # 4. Install dependencies using uv
-Write-Host "Installing dependencies from requirements-ci.txt..."
-uv pip install -r requirements-ci.txt
+Write-Host "Installing dependencies from requirements.txt..."
+uv pip install -r requirements.txt
 
 # -------------------- Final Confirmation --------------------
 Write-Host ""
