@@ -25,6 +25,8 @@ and issues.
 ### Project Status
 
 `pdf-fmt` is currently undergoing a major rewrite. Stay tuned.
+> The script installer in the main branch will not work, use the compiled binary
+> under the releases page.
 
 ### Features
 
