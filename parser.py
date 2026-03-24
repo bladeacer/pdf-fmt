@@ -6,7 +6,7 @@ import io
 import multiprocessing
 import glob
 
-from typing import Dict, Any
+from typing import Dict, Any, Callable, Optional
 
 import pdf2image
 

@@ -9,16 +9,6 @@ NON_ALPHA_PATTERN = re.compile(r'[^a-zA-Z]')
 CompiledFilters = Dict[str, Callable[[str], Any]]
 
 
-def write_content_to_file(content: str, file_path: str):
-    """Writes content to a specified text file."""
-    try:
-        with open(file_path, 'w', encoding='utf-8') as f:
-            f.write(content)
-        print(f"SUCCESS: Extracted content written to '{file_path}'.")
-    except Exception as e:
-        print(f"Error: Could not write content to file '{file_path}'. {e}")
-
-
 def compile_footer_patterns(patterns: List[str]) -> List[re.Pattern]:
     """Compiles list of regex strings into regex objects."""
     regex_list: List[re.Pattern] = []
