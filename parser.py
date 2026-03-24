@@ -8,7 +8,27 @@ import glob
 
 from typing import Dict, Any
 
-from pdf_fmt.startup import setup_cli
+import pdf2image
+
+from pdf_fmt.startup import setup_cli, IS_CI_BUILD
+from pdf_fmt.core import NON_ALPHA_PATTERN, DEFAULT_CONVERT_FORMATS, DEFAULT_CHARS_REGEX
+from pdf_fmt.core import (
+    compile_footer_patterns, filter_line_content_factory,
+    format_indented_line, is_footer_factory, write_content_to_file
+)
+
+# from pdfminer.pdfpage import PDFPage
+# from pdfminer.pdfinterp import PDFResourceManager, PDFPageInterpreter
+# from pdfminer.converter import TextConverter
+# from pdfminer.layout import LAParams
+
+pyperclip = None
+get_american_spelling: Callable[[str], str] = lambda w: w
+get_british_spelling: Callable[[str], str] = lambda w: w
+_CONVERSION_TOOL_CACHE: Optional[str] = None
+FALLBACK_FORMAT = "JPEG"
+# PDFMINER_IMG_REGEX = re.compile(r'(.+?)-p(\d+)-\d+\.')
+
 
 def execute_main_pipeline(CONFIG: Dict[str, Any]) -> None:
     """
@@ -16,4 +36,5 @@ def execute_main_pipeline(CONFIG: Dict[str, Any]) -> None:
     filter compilation, conversion, extraction, cleanup, and post-actions.
     """
     args = setup_cli()
-    prints(args)
+    # prints(args)
+
