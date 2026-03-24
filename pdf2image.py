@@ -29,6 +29,7 @@ SIMPLE_PAGENUM_REGEX = re.compile(r'(?:Image|Im)(\d+)(?:\.\d+)?(?:\.\d+)?\.')
 PDFMINER_OUTPUT_REGEX = re.compile(r'^(?:Image|Im)\d+(?:\.\d+)*\.|^\w+-p\d+-\d+\.')
 _ImageProcessArgs = Tuple[str, str, List[str], int, str, int]
 
+
 def _get_format_details(format_str: str) -> Optional[Tuple[str, str]]:
     """
     Normalizes the user-provided format string (e.g., 'jpg', 'PNG') 
