@@ -20,13 +20,12 @@ from pdfminer.pdfinterp import PDFResourceManager, PDFPageInterpreter
 from pdfminer.converter import TextConverter
 from pdfminer.layout import LAParams
 
-pyperclip = None
-get_american_spelling: Callable[[str], str] = lambda w: w
-get_british_spelling: Callable[[str], str] = lambda w: w
-_CONVERSION_TOOL_CACHE: Optional[str] = None
+# pyperclip = None
+# get_american_spelling: Callable[[str], str] = lambda w: w
+# get_british_spelling: Callable[[str], str] = lambda w: w
+# _CONVERSION_TOOL_CACHE: Optional[str] = None
 FALLBACK_FORMAT = "JPEG" 
 PDFMINER_IMG_REGEX = re.compile(r'(.+?)-p(\d+)-\d+\.')
-
 
 
 def _process_page_text_block(
@@ -131,6 +130,10 @@ def execute_main_pipeline(CONFIG: Dict[str, Any]) -> None:
     spelling_config = linting_config.get("spelling", {})
 
     supported_formats = conversion_config.get("supported_formats", DEFAULT_CONVERT_FORMATS)
+    pdf_file_path, temp_file_created_flag = convert_to_pdf(input_file_path, supported_formats)
+
+    if not pdf_file_path:
+        sys.exit(1)
 
     LINE_REGEX_PATTERNS = filters_config.get("footer_regexes", [])
     if not isinstance(LINE_REGEX_PATTERNS, list):
@@ -139,23 +142,18 @@ def execute_main_pipeline(CONFIG: Dict[str, Any]) -> None:
     if not isinstance(CHARS_REGEX_STRING, str):
         CHARS_REGEX_STRING = DEFAULT_CHARS_REGEX
 
-    spelling_locale = spelling_config.get("enforce_locale", "en-US")
-    if not isinstance(spelling_locale, str):
-        print("Warning: 'enforce_locale' in config is not a string. Defaulting to 'en-US'.")
-        spelling_locale = "en-US"
+    # spelling_locale = spelling_config.get("enforce_locale", "en-US")
+    # if not isinstance(spelling_locale, str):
+    #     print("Warning: 'enforce_locale' in config is not a string. Defaulting to 'en-US'.")
+    #     spelling_locale = "en-US"
         
-    ignore_list = spelling_config.get("ignore_locale_strings", [])
-    if not isinstance(ignore_list, list):
-        print("Warning: 'ignore_locale_strings' in config is not a list. Defaulting to empty.")
-        ignore_list = []
+    # ignore_list = spelling_config.get("ignore_locale_strings", [])
+    # if not isinstance(ignore_list, list):
+    #     print("Warning: 'ignore_locale_strings' in config is not a list. Defaulting to empty.")
+    #     ignore_list = []
     
     COMPILED_FOOTER_PATTERNS = compile_footer_patterns(LINE_REGEX_PATTERNS)
     ALLOWED_CHARS_PATTERN = re.compile(CHARS_REGEX_STRING)
-
-    pdf_file_path, temp_file_created_flag = convert_to_pdf(input_file_path, supported_formats)
-
-    if not pdf_file_path:
-        sys.exit(1)
 
     actions = CONFIG.get("actions", {})
     image_dir = actions.get("image_dir", None)
@@ -243,92 +241,93 @@ def execute_main_pipeline(CONFIG: Dict[str, Any]) -> None:
         perform_post_actions(extracted_content, CONFIG)
 
 
-def _import_dependencies():
-    """Dynamically imports non-stdlib dependencies and sets module-level variables."""
-    global pyperclip
-    global get_american_spelling, get_british_spelling
+# def _import_dependencies():
+#     """Dynamically imports non-stdlib dependencies and sets module-level variables."""
+#     global pyperclip
+#     global get_american_spelling, get_british_spelling
 
-    try:
-        import pyperclip as pc
-        pyperclip = pc
-    except ImportError:
-        print("Warning: 'pyperclip' library not found. Clipboard functionality will be disabled.")
-        pyperclip = None
+#     try:
+#         import pyperclip as pc
+#         pyperclip = pc
+#     except ImportError:
+#         print("Warning: 'pyperclip' library not found. Clipboard functionality will be disabled.")
+#         pyperclip = None
 
-    try:
-        from breame.spelling import get_american_spelling as g_a, get_british_spelling as g_b
-        get_american_spelling = g_a
-        get_british_spelling = g_b
-    except ImportError:
-        if not getattr(sys, 'frozen', False):
-            print("Error: The 'breame' library is required for spelling enforcement.")
-            print("Please run: pip install breame")
-            sys.exit(1)
+#     try:
+#         from breame.spelling import get_american_spelling as g_a, get_british_spelling as g_b
+#         get_american_spelling = g_a
+#         get_british_spelling = g_b
+#     except ImportError:
+#         if not getattr(sys, 'frozen', False):
+#             print("Error: The 'breame' library is required for spelling enforcement.")
+#             print("Please run: pip install breame")
+#             sys.exit(1)
 
-        def stub_american(word: str) -> str: return word
-        def stub_british(word: str) -> str: return word
-        get_american_spelling = stub_american
-        get_british_spelling = stub_british
+#         def stub_american(word: str) -> str: return word
+#         def stub_british(word: str) -> str: return word
+#         get_american_spelling = stub_american
+#         get_british_spelling = stub_british
 
-def enforce_spelling(text: str, locale: str, ignore_list: List[str]) -> str:
-    """Enforces US or UK spelling using the breame library, preserving case,
-    while ignoring words specified in the ignore_list.
-    """
-    global get_american_spelling, get_british_spelling
-    from core import preserve_case
+# def enforce_spelling(text: str, locale: str, ignore_list: List[str]) -> str:
+#     """Enforces US or UK spelling using the breame library, preserving case,
+#     while ignoring words specified in the ignore_list.
+#     """
+#     global get_american_spelling, get_british_spelling
+#     from core import preserve_case
 
-    ignore_set = {s.lower() for s in ignore_list}
+#     ignore_set = {s.lower() for s in ignore_list}
 
-    def process_word(word: str) -> str:
-        clean_word = NON_ALPHA_PATTERN.sub('', word)
-        if not clean_word: return word
+#     def process_word(word: str) -> str:
+#         clean_word = NON_ALPHA_PATTERN.sub('', word)
+#         if not clean_word: return word
 
-        word_to_lookup_lower = clean_word.lower()
+#         word_to_lookup_lower = clean_word.lower()
 
-        if word_to_lookup_lower in ignore_set:
-            return word
+#         if word_to_lookup_lower in ignore_set:
+#             return word
 
-        try:
-            if locale.upper() == "EN-US":
-                base_converted = get_american_spelling(word_to_lookup_lower)
-            elif locale.upper() == "EN-UK":
-                base_converted = get_british_spelling(word_to_lookup_lower)
-            else:
-                base_converted = clean_word
-        except ValueError:
-            base_converted = clean_word
+#         try:
+#             if locale.upper() == "EN-US":
+#                 base_converted = get_american_spelling(word_to_lookup_lower)
+#             elif locale.upper() == "EN-UK":
+#                 base_converted = get_british_spelling(word_to_lookup_lower)
+#             else:
+#                 base_converted = clean_word
+#         except ValueError:
+#             base_converted = clean_word
 
-        if base_converted == word_to_lookup_lower:
-            final_word_base = clean_word
-        else:
-            final_word_base = base_converted
+#         if base_converted == word_to_lookup_lower:
+#             final_word_base = clean_word
+#         else:
+#             final_word_base = base_converted
 
-        case_preserved_word = preserve_case(clean_word, final_word_base)
-        return word.replace(clean_word, case_preserved_word, 1)
+#         case_preserved_word = preserve_case(clean_word, final_word_base)
+#         return word.replace(clean_word, case_preserved_word, 1)
 
-    return " ".join(process_word(word) for word in text.split())
+#     return " ".join(process_word(word) for word in text.split())
 
-def clean_and_lint_text(text: str, locale: str, ignore_list: List[str]) -> str:
-    """Applies spelling linting and then cleans up spacing."""
-    from core import replace_successive_spaces
 
-    if locale.lower() in ["en-us", "en-uk"]:
-        text = enforce_spelling(text, locale, ignore_list)
-    text = replace_successive_spaces(text)
-    return text
+# def clean_and_lint_text(text: str, locale: str, ignore_list: List[str]) -> str:
+#     """Applies spelling linting and then cleans up spacing."""
+#     from core import replace_successive_spaces
 
-def copy_content(content: str):
-    """Copies content to clipboard."""
-    global pyperclip
-    if pyperclip is None:
-        print("Warning: Clipboard copy skipped as 'pyperclip' is not available.")
-        return
+#     if locale.lower() in ["en-us", "en-uk"]:
+#         text = enforce_spelling(text, locale, ignore_list)
+#     text = replace_successive_spaces(text)
+#     return text
+
+# def copy_content(content: str):
+#     """Copies content to clipboard."""
+#     global pyperclip
+#     if pyperclip is None:
+#         print("Warning: Clipboard copy skipped as 'pyperclip' is not available.")
+#         return
         
-    try:
-        pyperclip.copy(content)
-        print("SUCCESS: Extracted content copied to clipboard.")
-    except pyperclip.PyperclipException as e:
-        print(f"Warning: Could not copy to clipboard. Error: {e}")
+#     try:
+#         pyperclip.copy(content)
+#         print("SUCCESS: Extracted content copied to clipboard.")
+#     except pyperclip.PyperclipException as e:
+#         print(f"Warning: Could not copy to clipboard. Error: {e}")
 
 def perform_post_actions(content: str, config: Dict[str, Any]):
     """Executes post-extraction actions (copy, write file)."""

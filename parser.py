@@ -16,6 +16,7 @@ from pdf_fmt.core import (
     compile_footer_patterns, filter_line_content_factory,
     format_indented_line, is_footer_factory, write_content_to_file
 )
+from pdf_fmt.spell import locale_checks
 
 # from pdfminer.pdfpage import PDFPage
 # from pdfminer.pdfinterp import PDFResourceManager, PDFPageInterpreter
@@ -23,8 +24,6 @@ from pdf_fmt.core import (
 # from pdfminer.layout import LAParams
 
 pyperclip = None
-get_american_spelling: Callable[[str], str] = lambda w: w
-get_british_spelling: Callable[[str], str] = lambda w: w
 _CONVERSION_TOOL_CACHE: Optional[str] = None
 FALLBACK_FORMAT = "JPEG"
 # PDFMINER_IMG_REGEX = re.compile(r'(.+?)-p(\d+)-\d+\.')
@@ -32,9 +31,9 @@ FALLBACK_FORMAT = "JPEG"
 
 def execute_main_pipeline(CONFIG: Dict[str, Any]) -> None:
     """
-    Executes the main pipeline: CLI setup, dependency imports, config loading, 
+    Executes the main pipeline: CLI setup, dependency imports, config loading,
     filter compilation, conversion, extraction, cleanup, and post-actions.
     """
     args = setup_cli()
-    # prints(args)
-
+    input_file_path = args.file_path
+    spelling_locale, ignore_list = locale_checks(CONFIG)
