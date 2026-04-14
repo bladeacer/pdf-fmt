@@ -67,12 +67,6 @@ extraction, either **dependency** needs to be installed and accessible in your `
 
 ### Known issues
 
-> Cannot set gray non-stroke color because /'Pattern x' is an invalid float value
-
-You can ignore this error or make use of [qpdf](https://github.com/qpdf/qpdf)
-or [GhostScript](https://ghostscript.com/releases/gsdnld.html) to convert your
-PDF before running `pdf-fmt`.
-
 > Inaccurate locale enforcement e.g. localization -> localization even
 > with UK locale enforcement enabled.
 
@@ -82,7 +76,29 @@ Breame's.
 
 # Quick Start
 
-## Download from Release Page (Recommended)
+## Prerequisites
+
+* You would need to have [Git](https://git-scm.com/install) and
+[Python 3.10 or above](https://www.python.org/downloads/) installed
+  * To confirm, run `which git` and `which python` in a Linux/macOS terminal
+  * For Windows users, run `where git` and `where python` in Command Prompt
+
+If you **only downloading the compiled binaries**, you can ignore this part.
+
+These prerequisites also apply to compiling from source.
+
+* Other prerequisites are documented in the section on [compiling from source](#compile-from-source)
+
+## Install with uv
+
+Requires [uv](https://github.com/astral-sh/uv).
+
+```
+uv tool install git+https://github.com/bladeacer/pdf-fmt
+pdf-fmt
+```
+
+## Download from Release Page
 
 For **Windows and Linux users**, You can get the compiled binary
 [the latest release](https://github.com/bladeacer/pdf-fmt/releases/latest).
@@ -103,7 +119,7 @@ On Linux, run:
 
 ```bash
 cd Downloads
-mv pdf-fmt-x64-0.6.1 pdf-fmt
+mv pdf-fmt-<arch>-<version-no.> pdf-fmt
 chmod +x ./pdf-fmt
 ./pdf-fmt
 ```
@@ -121,8 +137,7 @@ You can also choose to do the following after this step:
 
 If you wish to get an updated version of the executable, download the newer
 latest version and remove the old executable file.
-> If you wish to use `pdf-fmt` on macOS, you can use the script installer or
-> compile from source instead.
+> If you wish to use `pdf-fmt` on macOS, you can use the other methods
 
 ### About Versioning
 
@@ -132,23 +147,10 @@ The version number might be different from the one in the above example.
 
 ## Script Installer
 
-You can use `pdf-fmt` via the script installer,
+You can also use `pdf-fmt` via the script installer,
 which sets up a isolated
 [Python Virtual Environment](https://docs.python.org/3/library/venv.html)
 to manage all dependencies.
-
-## Prerequisites
-
-* You would need to have [Git](https://git-scm.com/install) and
-[Python 3.10 or above](https://www.python.org/downloads/) installed
-  * To confirm, run `which git` and `which python` in a Linux/macOS terminal
-  * For Windows users, run `where git` and `where python` in Command Prompt
-
-If you **only downloading the compiled binaries**, you can ignore this part.
-
-These prerequisites also apply to compiling from source.
-
-* Other prerequisites are documented in the section on [compiling from source](#compile-from-source)
 
 ### Reviewing the scripts
 
@@ -197,6 +199,8 @@ chmod +x ./pdf-fmt.py
 ./pdf-fmt.py
 ```
 
+You might find the use of the [Makefile](./Makefile) helpful in this regard.
+
 For Windows
 
 ```ps1
@@ -219,7 +223,9 @@ It is recommended to use [py-env](https://github.com/pyenv/pyenv) to manage
 different versions of Python. It is also recommended to install [ccache](https://github.com/ccache/ccache)
 for compiled binaries to be cached. You would also need [the following `nuitka` requirements](https://github.com/Nuitka/Nuitka).
 
-### Pyenv setup
+You might find the use of the [Makefile](./Makefile) helpful in this regard.
+
+### Pyenv setup (optional)
 
 After installing pyenv, follow its instructions on configuring with `pyenv init`.
 
@@ -346,8 +352,9 @@ You may need to install [patchelf](https://github.com/NixOS/patchelf)
 | --- | --- | --- |
 | 3.10 | Yes | Compiling from source, script works. |
 | 3.11 | Yes | Compiling from source, script works. Used in GitHub Actions. |
-| 3.12 | Untested | WIP |
+| 3.12 | Untested | PRs welcome |
 | 3.13 | Partial | Compiling from source, script works. |
+| 3.14 | Untested | PRs welcome |
 
 ## Contributing
 
@@ -373,7 +380,7 @@ TBC
 
 The script, compiled binaries and compiling from source should work for all major
 operating systems that support `Git`, `Python`,
-[`pdfminer.six`](https://github.com/pdfminer/pdfminer.six) and
+[`pdfplumber`](https://github.com/jsvine/pdfplumber) and
 [`pyperclip`](https://github.com/asweigart/pyperclip).
 
 > Note: These dependencies are slightly larger than their C equivalents, though this
@@ -391,16 +398,6 @@ python -m unittest discover -sv tests
 ```
 
 Alternatively, you can run the [script](./scripts/tests.sh).
-
-### Test GitHub Action
-
-Using [act](https://github.com/nektos/act).
-
-```bash
-curl -o act.sh https://raw.githubusercontent.com/bladeacer/pdf-fmt/refs/heads/main/scripts/act.sh
-chmod +x act.sh
-./act.sh
-```
 
 ## License
 

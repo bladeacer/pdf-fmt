@@ -1,7 +1,6 @@
 import os
 import yaml
 import platform
-import time
 from typing import Dict, Any, Optional
 
 CONFIG_FILENAME = "pdf-fmt.yaml"
@@ -9,6 +8,7 @@ CONFIG_FILENAME = "pdf-fmt.yaml"
 _CONFIG_CACHE: Dict[str, Any] = {}
 _CONFIG_PATH_CACHE: Optional[str] = None
 _CONFIG_MTIME_CACHE: float = 0.0
+
 
 def find_config_file() -> Optional[str]:
     """Searches for the config file using ENV, XDG standard, then CWD."""
@@ -36,20 +36,21 @@ def find_config_file() -> Optional[str]:
     if os.path.exists(cwd_path):
         _CONFIG_PATH_CACHE = cwd_path
         return cwd_path
-    
+
     _CONFIG_PATH_CACHE = None
     return None
+
 
 def _load_config(file_path: str) -> Dict[str, Any]:
     """Internal function to load config data from a YAML file with basic validation."""
     try:
         with open(file_path, 'r', encoding='utf-8') as f:
             config = yaml.safe_load(f)
-    
+
     except yaml.YAMLError as e:
         print(f"Error: Malformed YAML syntax in '{file_path}': {e}. Using defaults.\n")
         return {}
-    
+
     except Exception as e:
         print(f"Error: Could not read file '{file_path}': {e}. Using defaults.\n")
         return {}
@@ -60,19 +61,20 @@ def _load_config(file_path: str) -> Dict[str, Any]:
         else:
             print(f"Error: Configuration file '{file_path}' must have a dictionary (map) as its root element, found '{type(config).__name__}'. Using defaults.\n")
             return {}
-            
+
     return config
+
 
 def load_config() -> Dict[str, Any]:
     """Loads config data, utilizing modification time caching."""
     global _CONFIG_CACHE, _CONFIG_MTIME_CACHE
-    
+
     file_path = find_config_file()
-    
+
     if not file_path:
         print(f"Warning: Configuration file '{CONFIG_FILENAME}' not found. Using defaults.")
         return {}
-    
+
     try:
         current_mtime = os.path.getmtime(file_path)
     except OSError:
@@ -84,9 +86,9 @@ def load_config() -> Dict[str, Any]:
         return _CONFIG_CACHE
 
     config = _load_config(file_path)
-    
+
     _CONFIG_CACHE = config
     _CONFIG_MTIME_CACHE = current_mtime
     print(f"INFO: Loaded configuration from: {file_path}")
-    
+
     return config

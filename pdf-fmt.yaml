@@ -1,5 +1,3 @@
-# pdf-fmt.yaml
-
 # ------------------------------------------------------------------------------
 # 1. FILTERS
 # Rules for character filtering, spelling linting, and line exclusion.
@@ -42,7 +40,7 @@ filters:
     # Defines the language standard to enforce. Options: "en-US", "en-UK", or "none".
     spelling:
       enforce_locale: "en-UK" 
-      # [DEV] Fixed to work, is currently broken in binary.
+
       # You can specify a set of locale strings to ignore. By default, the localisation library
       # used has some inaccuracies regarding localising some words.
       ignore_locale_strings:
@@ -75,7 +73,7 @@ conversion:
 processing:
   # Number of CPU cores used when processing PDF extraction.
   #
-  # [DEV] If set to 0, will default to one less than the number of maximum CPU cores. 
+  # If set to 0, will default to one less than the number of maximum CPU cores. 
   # Do not set to 0 if using binary.
   cores: 0
 
@@ -104,17 +102,20 @@ formatting:
   # REGEX IS NOT CASE SENSITIVE, using Python flavoured regex.
   #
   # For more information, view https://docs.python.org/3/library/re.html
+  # [DEV] TODO: Support before/after, e.g. replace ". - " with "\n -"
   regex_enclosures:
 
     # Pattern to match the content to be wrapped (e.g., list/array)
-    # - pattern: '\[.*?\]' 
+    - pattern: '\[.*?\]' 
 
     # The symbol to wrap the matched content with. e.g., '`' will result in `[1, 2, 3]`.
-      # wrapper: '`' 
+      wrapper: '`' 
 
     # You can specify more than one item
     # - pattern: '\[.*?\]' 
       # wrapper: '`' 
+    - pattern: '' 
+      wrapper: '`' 
 
 # ------------------------------------------------------------------------------
 # 5. ACTIONS
@@ -128,24 +129,25 @@ actions:
   # write_file: "output.md"
   write_file: ""
 
-  # [DEV] If set, images will be extracted and written to this directory
+  # If set, images will be extracted and written to this directory
   # in addition to standard text extraction.
   # - Ensure that the directory is made before running.
   # - Useful for extracting diagrams, tables which you can then use OCR on. 
   # - Alternatively, you can embed the images in your notes.
   image_dir: "./images"
   
-  # [DEV] The target image format for extracted images. Can be a single string (e.g., "png") 
-  # or a list for preferred formats. The first item is used by default.
+  # The target image format for extracted images. Can be a single string (e.g., "png") 
+  # or a list for preferred formats. The first item is used by default. Falls back to png
   image_format:
-    - "png"
+    - "svg"
     - "webp"
+    - "png"
     - "jpeg"
  
-  # [DEV] If an extracted image exceeds this size, it will fall back to the next specified format.
+  # If an extracted image exceeds this size, it will fall back to the next specified format.
   # Defaults to 2000 kB or 2 MB
   fallback_image_kb: 2000
 
-  # [DEV] If set, output images over a specific similarity threshold will be discarded.
+  # If set, output images over a specific similarity threshold will be discarded.
   # Set to 95% by default.
   image_discard_threshold: 95
