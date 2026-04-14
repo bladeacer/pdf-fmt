@@ -57,8 +57,6 @@ jobs:
           python-flag: no_docstrings
           deployment: on
           output-file: pdf-fmt
-          include-package: core,parser
-
           warn-implicit-exceptions: true
           warn-unusual-code: true
           copyright: "Copyright (C) 2025 bladeacer. Licensed under GPLv3."

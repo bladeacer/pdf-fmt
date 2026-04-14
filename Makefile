@@ -16,7 +16,7 @@ help:
 	@echo "  setup         Sync .venv and update requirements.txt"
 	@echo "  install       Install project locally using uv"
 	@echo "  test          Run unit tests using .venv"
-	@echo "  run           Run main.py using .venv"
+	@echo "  run           Run pdf-fmt.py using .venv"
 	@echo "  compile       Build standalone binary using .venv-build"
 	@echo "  run-compiled  Execute the compiled binary"
 	@echo "  act           Run local GitHub Actions via act"
@@ -36,7 +36,7 @@ test:
 	$(UV) run python -m unittest discover -sv tests
 
 run:
-	$(UV) run python main.py
+	$(UV) run python pdf-fmt.py
 
 compile:
 	@echo "Cleaning up previous build artifacts..."
