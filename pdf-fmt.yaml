@@ -102,17 +102,20 @@ formatting:
   # REGEX IS NOT CASE SENSITIVE, using Python flavoured regex.
   #
   # For more information, view https://docs.python.org/3/library/re.html
+  # [DEV] TODO: Support before/after, e.g. replace ". - " with "\n -"
   regex_enclosures:
 
     # Pattern to match the content to be wrapped (e.g., list/array)
-    # - pattern: '\[.*?\]' 
+    - pattern: '\[.*?\]' 
 
     # The symbol to wrap the matched content with. e.g., '`' will result in `[1, 2, 3]`.
-      # wrapper: '`' 
+      wrapper: '`' 
 
     # You can specify more than one item
     # - pattern: '\[.*?\]' 
       # wrapper: '`' 
+    - pattern: '' 
+      wrapper: '`' 
 
 # ------------------------------------------------------------------------------
 # 5. ACTIONS
@@ -134,10 +137,11 @@ actions:
   image_dir: "./images"
   
   # The target image format for extracted images. Can be a single string (e.g., "png") 
-  # or a list for preferred formats. The first item is used by default.
+  # or a list for preferred formats. The first item is used by default. Falls back to png
   image_format:
-    - "png"
+    - "svg"
     - "webp"
+    - "png"
     - "jpeg"
  
   # If an extracted image exceeds this size, it will fall back to the next specified format.

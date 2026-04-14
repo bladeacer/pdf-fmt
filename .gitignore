@@ -7,3 +7,4 @@ output.md
 nuitka*
 .python-version
 *.egg-info
+*.pdf

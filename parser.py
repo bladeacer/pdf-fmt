@@ -26,12 +26,12 @@ def _get_validated_cores(config: Dict[str, Any]) -> int:
 
 def _get_image_formats(actions: Dict[str, Any]) -> List[str]:
     """Normalizes image format settings to a list of strings."""
-    setting = actions.get('image_format', ['PNG'])
+    setting = actions.get('image_format', ['png'])
     if isinstance(setting, str):
         return [setting]
     if isinstance(setting, list) and setting:
         return setting
-    return ['PNG']
+    return ['png']
 
 
 def _run_image_pipeline(
@@ -39,7 +39,7 @@ def _run_image_pipeline(
     actions: Dict[str, Any],
     cores: int
 ) -> None:
-    """Handles the concurrent image extraction and deduplication process."""
+    """Handles the extraction using YAML config values."""
     image_dir = actions.get("image_dir")
     if not isinstance(image_dir, str):
         return
@@ -47,13 +47,16 @@ def _run_image_pipeline(
     res_dir = os.path.abspath(os.path.expanduser(image_dir))
     os.makedirs(res_dir, exist_ok=True)
 
+    # Get values directly from YAML config
+    fallback_size = actions.get('fallback_image_kb', 2000)
+    formats = _get_image_formats(actions)
+
     proc = multiprocessing.Process(
         target=_extract_and_format_images,
-        args=(pdf_path, res_dir, _get_image_formats(actions),
-              actions.get('fallback_image_kb', 2000), cores)
+        args=(pdf_path, res_dir, formats, fallback_size, cores)
     )
 
-    print("INFO: Starting concurrent image extraction...")
+    print(f"INFO: Starting extraction (Max {fallback_size}KB, Formats: {formats})")
     proc.start()
     proc.join(timeout=120)
 
@@ -61,12 +64,8 @@ def _run_image_pipeline(
         print("Warning: Image extraction timed out. Terminating.")
         proc.terminate()
 
-    threshold = actions.get("image_discard_threshold", 90)
-    try:
-        threshold = int(threshold) if 0 <= int(threshold) <= 100 else 90
-    except (ValueError, TypeError):
-        threshold = 90
-
+    # Similarity discard check
+    threshold = actions.get("image_discard_threshold", 95)
     _discard_similar_images(res_dir, threshold)
 
 

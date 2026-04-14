@@ -13,6 +13,8 @@ dependencies = [
   "pyperclip",
   "breame",
   "Pillow",
+  "svglib",
+  "reportlab",
   "imagehash"
 ]
 
