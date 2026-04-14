@@ -6,7 +6,6 @@ import re
 from typing import List, Any, Tuple, Dict
 
 # Constants
-PYPERCLIP_WARN = "Warning: 'pyperclip' library not found. Clipboard functionality disabled."
 BREAME_ERROR = "Error: 'breame' library required for spelling. Run: pip install breame."
 
 
@@ -66,22 +65,6 @@ def enforce_spelling(text: str, locale: str, ignore_list: List[str]) -> str:
     return " ".join(process_word(w) for w in text.split())
 
 
-def copy_content(content: str) -> None:
-    """
-    Copies content to clipboard using pyperclip.
-    Checks for library availability at runtime.
-    """
-    try:
-        import pyperclip
-    except ImportError:
-        print(PYPERCLIP_WARN)
-        return
-
-    try:
-        pyperclip.copy(content)
-        print("SUCCESS: Extracted content copied to clipboard.")
-    except Exception as e:
-        print(f"Warning: Could not copy to clipboard. Error: {e}")
 
 
 def locale_checks(CONFIG: Dict[str, Any]) -> Tuple[str, List[str]]:

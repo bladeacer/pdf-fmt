@@ -329,138 +329,138 @@ def execute_main_pipeline(CONFIG: Dict[str, Any]) -> None:
 #     except pyperclip.PyperclipException as e:
 #         print(f"Warning: Could not copy to clipboard. Error: {e}")
 
-def perform_post_actions(content: str, config: Dict[str, Any]):
-    """Executes post-extraction actions (copy, write file)."""
-    actions = config.get("actions", {})
-    if actions.get("copy", True):
-        copy_content(content)
+# def perform_post_actions(content: str, config: Dict[str, Any]):
+#     """Executes post-extraction actions (copy, write file)."""
+#     actions = config.get("actions", {})
+#     if actions.get("copy", True):
+#         copy_content(content)
 
-    file_path = actions.get("write_file")
-    if file_path and isinstance(file_path, str):
-        expanded_path = os.path.expanduser(file_path)
-        resolved_path = os.path.abspath(expanded_path)
-        write_content_to_file(content, resolved_path)
+#     file_path = actions.get("write_file")
+#     if file_path and isinstance(file_path, str):
+#         expanded_path = os.path.expanduser(file_path)
+#         resolved_path = os.path.abspath(expanded_path)
+#         write_content_to_file(content, resolved_path)
 
-def find_conversion_tool() -> Optional[str]:
-    """Checks for LibreOffice CLI (soffice) or Pandoc binary. The result is cached globally."""
-    global _CONVERSION_TOOL_CACHE
+# def find_conversion_tool() -> Optional[str]:
+#     """Checks for LibreOffice CLI (soffice) or Pandoc binary. The result is cached globally."""
+#     global _CONVERSION_TOOL_CACHE
 
-    if _CONVERSION_TOOL_CACHE is not None:
-        return _CONVERSION_TOOL_CACHE
+#     if _CONVERSION_TOOL_CACHE is not None:
+#         return _CONVERSION_TOOL_CACHE
 
-    if IS_CI_BUILD:
-        print("INFO: Skipping conversion tool check due to CI environment flag.")
-        _CONVERSION_TOOL_CACHE = None
-        return None
+#     if IS_CI_BUILD:
+#         print("INFO: Skipping conversion tool check due to CI environment flag.")
+#         _CONVERSION_TOOL_CACHE = None
+#         return None
 
-    soffice_names = ['soffice', 'libreoffice', 'lowriter', 'swriter']
-    for name in soffice_names:
-        try:
-            subprocess.run([name, '--version'], check=True, capture_output=True, timeout=5)
-            _CONVERSION_TOOL_CACHE = name
-            return name
-        except (subprocess.CalledProcessError, FileNotFoundError, subprocess.TimeoutExpired):
-            continue
+#     soffice_names = ['soffice', 'libreoffice', 'lowriter', 'swriter']
+#     for name in soffice_names:
+#         try:
+#             subprocess.run([name, '--version'], check=True, capture_output=True, timeout=5)
+#             _CONVERSION_TOOL_CACHE = name
+#             return name
+#         except (subprocess.CalledProcessError, FileNotFoundError, subprocess.TimeoutExpired):
+#             continue
 
-    try:
-        subprocess.run(['pandoc', '--version'], check=True, capture_output=True, timeout=5)
-        _CONVERSION_TOOL_CACHE = 'pandoc'
-        return 'pandoc'
-    except (subprocess.CalledProcessError, FileNotFoundError, subprocess.TimeoutExpired):
-        _CONVERSION_TOOL_CACHE = None
-        return None
+#     try:
+#         subprocess.run(['pandoc', '--version'], check=True, capture_output=True, timeout=5)
+#         _CONVERSION_TOOL_CACHE = 'pandoc'
+#         return 'pandoc'
+#     except (subprocess.CalledProcessError, FileNotFoundError, subprocess.TimeoutExpired):
+#         _CONVERSION_TOOL_CACHE = None
+#         return None
 
-def convert_to_pdf(input_path: str, supported_formats: List[str]) -> Tuple[Optional[str], Optional[bool]]:
-    """Converts a non-PDF file to PDF using LibreOffice CLI or Pandoc."""
-    file_ext = input_path.split('.')[-1].lower()
-    if file_ext == 'pdf':
-        return input_path, False
+# def convert_to_pdf(input_path: str, supported_formats: List[str]) -> Tuple[Optional[str], Optional[bool]]:
+#     """Converts a non-PDF file to PDF using LibreOffice CLI or Pandoc."""
+#     file_ext = input_path.split('.')[-1].lower()
+#     if file_ext == 'pdf':
+#         return input_path, False
 
-    if file_ext not in supported_formats:
-        print(f"Error: Input file format (.{file_ext}) is not supported for conversion to PDF.")
-        print(f"Supported formats: {', '.join(supported_formats)}.")
-        return None, None
+#     if file_ext not in supported_formats:
+#         print(f"Error: Input file format (.{file_ext}) is not supported for conversion to PDF.")
+#         print(f"Supported formats: {', '.join(supported_formats)}.")
+#         return None, None
 
-    conversion_tool = find_conversion_tool()
-    if not conversion_tool:
-        print("Error: File conversion failed. Neither LibreOffice CLI ('soffice', 'lowriter') nor 'pandoc' was found.")
-        print("Please ensure **LibreOffice** or **Pandoc** is installed and available in your system's PATH.")
-        return None, None
+#     conversion_tool = find_conversion_tool()
+#     if not conversion_tool:
+#         print("Error: File conversion failed. Neither LibreOffice CLI ('soffice', 'lowriter') nor 'pandoc' was found.")
+#         print("Please ensure **LibreOffice** or **Pandoc** is installed and available in your system's PATH.")
+#         return None, None
 
-    output_dir = os.path.dirname(input_path) or os.getcwd()
-    base_name = os.path.splitext(os.path.basename(input_path))[0]
-    temp_pdf_path = os.path.join(output_dir, base_name + ".pdf")
+#     output_dir = os.path.dirname(input_path) or os.getcwd()
+#     base_name = os.path.splitext(os.path.basename(input_path))[0]
+#     temp_pdf_path = os.path.join(output_dir, base_name + ".pdf")
 
-    i = 0
-    while os.path.exists(temp_pdf_path):
-        i += 1
-        temp_pdf_path = os.path.join(output_dir, f"{base_name}_{i}.pdf")
+#     i = 0
+#     while os.path.exists(temp_pdf_path):
+#         i += 1
+#         temp_pdf_path = os.path.join(output_dir, f"{base_name}_{i}.pdf")
 
-    command: List[str] = []
-    expected_output = ""
+#     command: List[str] = []
+#     expected_output = ""
 
-    if 'soffice' in conversion_tool or 'writer' in conversion_tool:
-        print(f"INFO: Attempting to convert '{file_ext.upper()}' to PDF using LibreOffice CLI...")
-        command = [
-            conversion_tool,
-            '--headless',
-            '--convert-to',
-            'pdf',
-            input_path,
-            '--outdir',
-            output_dir
-        ]
+#     if 'soffice' in conversion_tool or 'writer' in conversion_tool:
+#         print(f"INFO: Attempting to convert '{file_ext.upper()}' to PDF using LibreOffice CLI...")
+#         command = [
+#             conversion_tool,
+#             '--headless',
+#             '--convert-to',
+#             'pdf',
+#             input_path,
+#             '--outdir',
+#             output_dir
+#         ]
         
-        expected_output = os.path.join(output_dir, os.path.basename(input_path).rsplit('.', 1)[0] + ".pdf")
+#         expected_output = os.path.join(output_dir, os.path.basename(input_path).rsplit('.', 1)[0] + ".pdf")
 
-        final_pdf_path = os.path.join(output_dir, base_name + ".pdf")
+#         final_pdf_path = os.path.join(output_dir, base_name + ".pdf")
         
-        expected_output = final_pdf_path
-        temp_pdf_path = final_pdf_path
+#         expected_output = final_pdf_path
+#         temp_pdf_path = final_pdf_path
         
-    elif conversion_tool == 'pandoc':
-        print(f"INFO: Attempting to convert '{file_ext.upper()}' to PDF using Pandoc...")
-        command = [
-            'pandoc',
-            input_path,
-            '-o',
-            temp_pdf_path
-        ]
-        expected_output = temp_pdf_path
+#     elif conversion_tool == 'pandoc':
+#         print(f"INFO: Attempting to convert '{file_ext.upper()}' to PDF using Pandoc...")
+#         command = [
+#             'pandoc',
+#             input_path,
+#             '-o',
+#             temp_pdf_path
+#         ]
+#         expected_output = temp_pdf_path
         
-    try:
-        process = subprocess.run(
-            command,
-            check=False,
-            capture_output=True,
-            timeout=120
-        )
+#     try:
+#         process = subprocess.run(
+#             command,
+#             check=False,
+#             capture_output=True,
+#             timeout=120
+#         )
 
-        if 'soffice' in conversion_tool or 'writer' in conversion_tool:
-            potential_output = os.path.join(output_dir, os.path.basename(input_path).rsplit('.', 1)[0] + ".pdf")
-            if os.path.exists(potential_output):
-                temp_pdf_path = potential_output 
+#         if 'soffice' in conversion_tool or 'writer' in conversion_tool:
+#             potential_output = os.path.join(output_dir, os.path.basename(input_path).rsplit('.', 1)[0] + ".pdf")
+#             if os.path.exists(potential_output):
+#                 temp_pdf_path = potential_output 
 
-        if process.returncode != 0:
-            print(f"Error: Conversion failed (Exit Code {process.returncode}).")
-            print(f"Tool used: {conversion_tool}")
-            if process.stdout: print(f"STDOUT: {process.stdout.decode().strip()}")
-            if process.stderr: print(f"STDERR: {process.stderr.decode().strip()}")
-            return None, None
+#         if process.returncode != 0:
+#             print(f"Error: Conversion failed (Exit Code {process.returncode}).")
+#             print(f"Tool used: {conversion_tool}")
+#             if process.stdout: print(f"STDOUT: {process.stdout.decode().strip()}")
+#             if process.stderr: print(f"STDERR: {process.stderr.decode().strip()}")
+#             return None, None
 
-        if os.path.exists(temp_pdf_path):
-            print("INFO: Conversion successful.")
-            return temp_pdf_path, True
-        else:
-            print(f"Error: Conversion succeeded, but output file was not found at {temp_pdf_path}.")
-            return None, None
+#         if os.path.exists(temp_pdf_path):
+#             print("INFO: Conversion successful.")
+#             return temp_pdf_path, True
+#         else:
+#             print(f"Error: Conversion succeeded, but output file was not found at {temp_pdf_path}.")
+#             return None, None
 
-    except subprocess.TimeoutExpired:
-        print("Error: File conversion timed out after 120 seconds.")
-        return None, None
-    except Exception as e:
-        print(f"Conversion failed due to an unexpected error: {e}")
-        return None, None
+#     except subprocess.TimeoutExpired:
+#         print("Error: File conversion timed out after 120 seconds.")
+#         return None, None
+#     except Exception as e:
+#         print(f"Conversion failed due to an unexpected error: {e}")
+#         return None, None
 
 def extract_text_from_pdf(
     pdf_path: str,
