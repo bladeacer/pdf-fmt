@@ -19,9 +19,17 @@ dependencies = [
 [project.urls]
 Repository = "https://github.com/bladeacer/pdf-fmt"
 
+[project.scripts]
+pdf-fmt = "pdf_fmt.main:main"
+
 [dependency-groups]
 build = [
   "nuitka"
 ]
 
 [tool.uv]
+managed = true
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"

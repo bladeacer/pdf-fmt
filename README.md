@@ -76,6 +76,19 @@ Breame's.
 
 # Quick Start
 
+## Prerequisites
+
+* You would need to have [Git](https://git-scm.com/install) and
+[Python 3.10 or above](https://www.python.org/downloads/) installed
+  * To confirm, run `which git` and `which python` in a Linux/macOS terminal
+  * For Windows users, run `where git` and `where python` in Command Prompt
+
+If you **only downloading the compiled binaries**, you can ignore this part.
+
+These prerequisites also apply to compiling from source.
+
+* Other prerequisites are documented in the section on [compiling from source](#compile-from-source)
+
 ## Install with uv
 
 Requires [uv](https://github.com/astral-sh/uv).
@@ -139,19 +152,6 @@ which sets up a isolated
 [Python Virtual Environment](https://docs.python.org/3/library/venv.html)
 to manage all dependencies.
 
-## Prerequisites
-
-* You would need to have [Git](https://git-scm.com/install) and
-[Python 3.10 or above](https://www.python.org/downloads/) installed
-  * To confirm, run `which git` and `which python` in a Linux/macOS terminal
-  * For Windows users, run `where git` and `where python` in Command Prompt
-
-If you **only downloading the compiled binaries**, you can ignore this part.
-
-These prerequisites also apply to compiling from source.
-
-* Other prerequisites are documented in the section on [compiling from source](#compile-from-source)
-
 ### Reviewing the scripts
 
 * The script will prompt for confirmation before starting the installation
@@ -198,6 +198,8 @@ source .venv/bin/activate
 chmod +x ./pdf-fmt.py
 ./pdf-fmt.py
 ```
+
+You might find the use of the [Makefile](./Makefile) helpful in this regard.
 
 For Windows
 
