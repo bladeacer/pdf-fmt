@@ -1,39 +1,115 @@
+from typing import Dict, Any, List
 import sys
 import os
-import re
-import subprocess
-import io
 import multiprocessing
-import glob
 
-from typing import Dict, Any, Callable, Optional
-
-import pdf2image
-
-from pdf_fmt.startup import setup_cli, IS_CI_BUILD
-from pdf_fmt.core import NON_ALPHA_PATTERN, DEFAULT_CONVERT_FORMATS, DEFAULT_CHARS_REGEX
-from pdf_fmt.core import (
-    compile_footer_patterns, filter_line_content_factory,
-    format_indented_line, is_footer_factory, write_content_to_file
-)
+from pdf_fmt.core import DEFAULT_CONVERT_FORMATS, DEFAULT_CHARS_REGEX
 from pdf_fmt.spell import locale_checks
-
-# from pdfminer.pdfpage import PDFPage
-# from pdfminer.pdfinterp import PDFResourceManager, PDFPageInterpreter
-# from pdfminer.converter import TextConverter
-# from pdfminer.layout import LAParams
-
-pyperclip = None
-_CONVERSION_TOOL_CACHE: Optional[str] = None
-FALLBACK_FORMAT = "JPEG"
-# PDFMINER_IMG_REGEX = re.compile(r'(.+?)-p(\d+)-\d+\.')
+from pdf_fmt.startup import setup_cli
+from pdf_fmt.conversion import convert_to_pdf
+from pdf_fmt.processing import extract_text_from_pdf, perform_post_actions
+from pdf_fmt.image import _discard_similar_images, _extract_and_format_images
 
 
-def execute_main_pipeline(CONFIG: Dict[str, Any]) -> None:
+def _get_validated_cores(config: Dict[str, Any]) -> int:
+    """Calculates and validates the number of CPU cores to use."""
+    max_cores = max(1, os.cpu_count() - 1)
+    cores = config.get("processing", {}).get("cores", max_cores)
+    try:
+        cores_int = int(cores)
+        if 0 < cores_int < os.cpu_count():
+            return cores_int
+    except (ValueError, TypeError):
+        pass
+    return max_cores
+
+
+def _get_image_formats(actions: Dict[str, Any]) -> List[str]:
+    """Normalizes image format settings to a list of strings."""
+    setting = actions.get('image_format', ['PNG'])
+    if isinstance(setting, str):
+        return [setting]
+    if isinstance(setting, list) and setting:
+        return setting
+    return ['PNG']
+
+
+def _run_image_pipeline(
+    pdf_path: str,
+    actions: Dict[str, Any],
+    cores: int
+) -> None:
+    """Handles the concurrent image extraction and deduplication process."""
+    image_dir = actions.get("image_dir")
+    if not isinstance(image_dir, str):
+        return
+
+    res_dir = os.path.abspath(os.path.expanduser(image_dir))
+    os.makedirs(res_dir, exist_ok=True)
+
+    proc = multiprocessing.Process(
+        target=_extract_and_format_images,
+        args=(pdf_path, res_dir, _get_image_formats(actions),
+              actions.get('fallback_image_kb', 2000), cores)
+    )
+
+    print("INFO: Starting concurrent image extraction...")
+    proc.start()
+    proc.join(timeout=120)
+
+    if proc.is_alive():
+        print("Warning: Image extraction timed out. Terminating.")
+        proc.terminate()
+
+    threshold = actions.get("image_discard_threshold", 90)
+    try:
+        threshold = int(threshold) if 0 <= int(threshold) <= 100 else 90
+    except (ValueError, TypeError):
+        threshold = 90
+
+    _discard_similar_images(res_dir, threshold)
+
+
+def execute_main_pipeline(config: Dict[str, Any]) -> None:
     """
-    Executes the main pipeline: CLI setup, dependency imports, config loading,
-    filter compilation, conversion, extraction, cleanup, and post-actions.
+    Executes the main pipeline by coordinating specialized helpers.
     """
     args = setup_cli()
-    input_file_path = args.file_path
-    spelling_locale, ignore_list = locale_checks(CONFIG)
+    locale, ignores = locale_checks(config)
+
+    conv_cfg = config.get("conversion", {})
+    formats = conv_cfg.get("supported_formats", DEFAULT_CONVERT_FORMATS)
+    pdf_path, is_temp = convert_to_pdf(args.file_path, formats)
+
+    if not pdf_path:
+        sys.exit(1)
+
+    filt_cfg = config.get("filters", {})
+    footers = filt_cfg.get("footer_regexes", [])
+    if not isinstance(footers, list):
+        footers = []
+
+    chars = filt_cfg.get("allowed_chars_regex", DEFAULT_CHARS_REGEX)
+    if not isinstance(chars, str):
+        chars = DEFAULT_CHARS_REGEX
+
+    content, error = extract_text_from_pdf(
+        pdf_path, config, chars, footers, locale, ignores
+    )
+
+    _run_image_pipeline(pdf_path, config.get("actions", {}), _get_validated_cores(config))
+
+    if is_temp and os.path.exists(pdf_path):
+        try:
+            os.remove(pdf_path)
+            print(f"INFO: Cleaned up temporary PDF: {pdf_path}")
+        except Exception as e:
+            print(f"Warning: Cleanup failed: {e}")
+
+    if error:
+        print(f"Error: Extraction failed.\nDetails: {error}")
+        sys.exit(1)
+
+    if content:
+        print(content)
+        perform_post_actions(content, config)

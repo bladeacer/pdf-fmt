@@ -1,7 +1,8 @@
-from typing import Dict, Any, List, NamedTuple
+from typing import Dict, Any, List, NamedTuple, Tuple, Optional
 import os
 import re
-from pdf_fmt.formatting import clean_and_lint_text
+import multiprocessing
+import pdfplumber
 
 PYPERCLIP_WARN = "Warning: 'pyperclip' library not found. Clipboard functionality disabled."
 
@@ -69,6 +70,7 @@ def _process_page_text_block(args: PageProcessArgs) -> List[str]:
         split_fmt_line, compile_footer_patterns,
         ln_cont_factory, is_ft_factory, format_indented_line
     )
+    from pdf_fmt.formatting import clean_and_lint_text
 
     fmt_cfg = args.config.get("formatting", {})
     min_chars = fmt_cfg.get("min_chars_per_line", 0)
@@ -129,3 +131,117 @@ def _process_page_text_block(args: PageProcessArgs) -> List[str]:
     flush_buffer(line_buffer)
 
     return processed_content
+
+
+def _to_markdown_table(table: List[List[Optional[str]]]) -> str:
+    """Converts a list-of-lists table into a GitHub-flavored Markdown table."""
+    if not table or not any(table):
+        return ""
+
+    # Clean None values and newlines
+    clean_table = [
+        [" " if cell is None else cell.replace("\n", " ").strip() for cell in row]
+        for row in table
+    ]
+
+    headers = clean_table[0]
+    rows = clean_table[1:]
+
+    markdown = f"| {' | '.join(headers)} |\n"
+    markdown += f"| {' | '.join(['---'] * len(headers))} |\n"
+
+    for row in rows:
+        # Pad row if it's shorter than headers
+        if len(row) < len(headers):
+            row.extend([""] * (len(headers) - len(row)))
+        markdown += f"| {' | '.join(row)} |\n"
+
+    return markdown + "\n"
+
+
+def _get_page_elements(page, table_config: Dict[str, Any]) -> List[Tuple[float, str]]:
+    """Extracts and sorts tables and text for a single page."""
+    tables = page.find_tables(table_settings=table_config)
+
+    def is_outside_tables(obj):
+        t_top, t_bottom = obj.get("top"), obj.get("bottom")
+        if t_top is None or t_bottom is None:
+            return True
+        return not any(t.bbox[1] <= t_top and t_bottom <= t_bottom for t in tables)
+
+    elements: List[Tuple[float, str]] = []
+
+    for table in tables:
+        raw = table.extract()
+        if raw:
+            elements.append((table.bbox[1], _to_markdown_table(raw)))
+
+    clean_page = page.filter(is_outside_tables)
+    text = clean_page.extract_text(layout=True, use_text_flow=True)
+    if text:
+        elements.append((0, text))
+
+    elements.sort(key=lambda x: x[0])
+    return elements
+
+
+def _run_processing_pool(args_list: List[Any], cores: int) -> List[str]:
+    """Handles the switch between parallel and sequential execution."""
+    if len(args_list) > 1 and cores > 1:
+        try:
+            with multiprocessing.Pool(processes=cores) as pool:
+                return [line for page_result in pool.map(_process_page_text_block, args_list) 
+                        for line in page_result]
+        except Exception as e:
+            print(f"Warning: Multiprocessing failed ({e}). Falling back to sequential.")
+
+    return [line for args in args_list for line in _process_page_text_block(args)]
+
+
+def extract_text_from_pdf(
+    pdf_path: str,
+    config: Dict[str, Any],
+    allowed_chars_regex_string: str,
+    footer_regex_patterns: List[str],
+    spelling_locale: str,
+    ignore_list: List[str]
+) -> Tuple[Optional[str], Optional[str]]:
+
+    if not os.path.exists(pdf_path):
+        return None, f"Error: PDF file not found at '{pdf_path}'"
+
+    from pdf_fmt.core import post_process_content
+
+    fmt_cfg = config.get("formatting", {})
+    proc_cfg = config.get("processing", {})
+    table_cfg = fmt_cfg.get("extract_table", {})
+
+    max_cores = max(1, os.cpu_count() - 1)
+    cores_used = int(proc_cfg.get("cores", max_cores))
+
+    page_data_blocks: List[str] = []
+
+    try:
+        with pdfplumber.open(pdf_path) as pdf:
+            for page in pdf.pages:
+                elements = _get_page_elements(page, table_cfg)
+                page_data_blocks.append("\n\n".join(content for _, content in elements))
+    except Exception as e:
+        return None, f"An error occurred during PDF parsing: {e}"
+
+    pool_args = [
+        PageProcessArgs(
+            page_num=i,
+            page_text=block,
+            config=config,
+            allowed_chars_regex=allowed_chars_regex_string,
+            footer_patterns=footer_regex_patterns,
+            spelling_locale=spelling_locale,
+            ignore_list=ignore_list
+        )
+        for i, block in enumerate(page_data_blocks)
+    ]
+
+    extracted_lines = _run_processing_pool(pool_args, cores_used)
+
+    return post_process_content(extracted_lines, config), None

@@ -14,6 +14,7 @@ help:
 	@echo ""
 	@echo "Targets:"
 	@echo "  setup         Sync .venv and update requirements.txt"
+	@echo "  install       Install project locally using uv"
 	@echo "  test          Run unit tests using .venv"
 	@echo "  run           Run main.py using .venv"
 	@echo "  compile       Build standalone binary using .venv-build"
@@ -21,13 +22,11 @@ help:
 	@echo "  act           Run local GitHub Actions via act"
 	@echo "  clean         Remove venvs, build artifacts, and logs"
 
-# Sync .venv and update requirements.txt (manual call)
 setup:
 	@echo "Syncing development environment..."
 	$(UV) sync
 	@$(MAKE) requirements
 
-# Generate requirements.txt (Internal or manual)
 requirements:
 	@echo "Updating requirements.txt..."
 	$(UV) export --format requirements-txt --no-hashes --no-emit-project | sed 's/==.*//' > requirements.txt
@@ -36,11 +35,9 @@ requirements:
 test:
 	$(UV) run python -m unittest discover -sv tests
 
-# Run main.py (Does NOT force a requirements update)
 run:
 	$(UV) run python main.py
 
-# Sync the build environment (.venv-build) and compile
 compile:
 	@echo "Cleaning up previous build artifacts..."
 	rm -rf $(BUILD_DIR) $(VENV_BUILD)
@@ -54,7 +51,6 @@ compile:
 		--show-scons \
 		--mode=app \
 		--python-flag=no_docstrings \
-		--include-package=core,parser \
 		--warn-unusual-code \
 		--output-file=pdf-fmt \
 		--output-dir=$(BUILD_DIR) \
@@ -62,6 +58,9 @@ compile:
 		--copyright="Copyright (C) 2025 bladeacer. Licensed under GPLv3." \
 		--product-name="pdf-fmt" \
 		build.py 2>&1 | tee $(LOG_FILE)
+
+install:
+	uv tool install --editable .
 
 run-compiled: compile
 	@if [ -f $(EXE) ]; then \

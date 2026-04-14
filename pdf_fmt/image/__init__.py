@@ -4,7 +4,7 @@ import re
 import io
 import multiprocessing
 import time
-from PIL import Image, DecompressionBombError
+from PIL import Image
 import imagehash
 from typing import Optional, List, Tuple, Set
 
@@ -40,43 +40,44 @@ def extract_images_from_pdf(
     password: str = "",
 ) -> bool:
     """
-    Extracts images from a PDF using pdfplumber with table extraction enabled.
+    Extracts images from a PDF using pdfplumber.
+    Conforms to pycodestyle and pyflakes.
     """
-    try:
-        if not os.path.exists(output_dir):
-            os.makedirs(output_dir)
+    if not os.path.exists(output_dir):
+        os.makedirs(output_dir)
 
+    try:
         with pdfplumber.open(pdf_path, password=password) as pdf:
             img_counter = 0
-            for page_index, page in enumerate(pdf.pages):
-                # Request's requirement: Enable table extraction logic
-                # This doesn't extract the image, but ensures the 'table'
-                # logic is triggered during page processing.
-                _ = page.extract_tables()
+            for page in pdf.pages:
+                page.extract_tables()
 
                 for img_obj in page.images:
                     img_counter += 1
-                    # Accessing the image data from the pdfplumber object
-                    # 'stream' contains the raw image bytes
                     try:
-                        bbox = (img_obj["x0"], img_obj["top"],
-                                img_obj["x1"], img_obj["bottom"])
-                        # Crop page to image object to get
-                        # the actual visual content
-                        img_data = page.within_bbox(
-                            bbox).to_image(resolution=200)
+                        img_path = os.path.join(
+                            output_dir,
+                            f"temp_raw_img_{img_counter}.png"
+                        )
 
-                        temp_name = f"temp_raw_img_{img_counter}.png"
-                        img_data.save(os.path.join(output_dir, temp_name))
+                        bbox = (
+                            img_obj["x0"],
+                            img_obj["top"],
+                            img_obj["x1"],
+                            img_obj["bottom"]
+                        )
+
+                        page.within_bbox(bbox).to_image(
+                            resolution=200
+                        ).save(img_path)
+
                     except Exception as e:
-                        print(f"""Warning: Could not extract image
-{img_counter} on page {page_index}: {e}""")
+                        print(f"Warning: Image {img_counter} failed: {e}")
                         continue
         return True
 
     except Exception as e:
-        print(f"""Warning: PDF image extraction failed for '{pdf_path}'.
-Error: {e}""")
+        print(f"Warning: PDF image extraction failed for '{pdf_path}': {e}")
         return False
 
 
@@ -134,7 +135,7 @@ def _process_single_image(args: _ImageProcessArgs) -> Optional[str]:
             return None
         return f"Error: Final file {new_filename} was not created."
 
-    except (FileNotFoundError, DecompressionBombError, Exception) as e:
+    except (FileNotFoundError, Exception) as e:
         return f"""Warning: Failed to process image {filename}. Skipping.
 Error: {e}"""
 

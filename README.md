@@ -82,6 +82,12 @@ Breame's.
 
 # Quick Start
 
+## Install with uv
+
+```
+uv tool install git+https://github.com/bladeacer/pdf-fmt
+```
+
 ## Download from Release Page (Recommended)
 
 For **Windows and Linux users**, You can get the compiled binary
