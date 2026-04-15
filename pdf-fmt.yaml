@@ -139,7 +139,7 @@ actions:
   # The target image format for extracted images. Can be a single string (e.g., "png") 
   # or a list for preferred formats. The first item is used by default. Falls back to png
   image_format:
-    - "svg"
+    # - "svg"
     - "webp"
     - "png"
     - "jpeg"

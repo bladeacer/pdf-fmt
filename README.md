@@ -37,6 +37,7 @@ and issues.
 * Supports numerous formats
   * See [handling non-PDF formats](#handling-non-pdf-formats)
 * Image extraction
+  * PNG, WEBP, SVG, etc. supported
 * Table extraction
   * Experimental, will add a configuration file entry to configure behaviour
 * and many others to come...
@@ -52,10 +53,11 @@ management. I hope that it would be useful for you as well.
 ### What `pdf-fmt` is not
 
 This is **not an OCR** (Optical Character Recognition) tool. It only processes
-selectable text (with your cursor) found in the PDF structure.
+selectable text (with your cursor) found in the PDF structure. It is also able
+to extract images and tables, though the output might not be perfect every time.
 
 If your file contains images of text, you can use the image extraction feature
-before passing the output images to your OCR. This feature is currently under development.
+before passing the output images to your OCR.
 
 ### Handling non PDF formats
 

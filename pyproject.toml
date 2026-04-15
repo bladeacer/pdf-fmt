@@ -1,6 +1,6 @@
 [project]
 name = "pdf-fmt"
-version = "0.7.1"
+version = "0.7.2"
 description = "A PDF Extractor, Processor, and Formatter. Supports regex based exclusions and other niceties."
 authors = [
   {name = "bladeacer", email = "wg.nick.exe@gmail.com"}
@@ -12,8 +12,7 @@ dependencies = [
   "pdfplumber",
   "pyperclip",
   "breame",
-  "Pillow",
-  "imagehash"
+  "Pillow"
 ]
 
 [project.urls]

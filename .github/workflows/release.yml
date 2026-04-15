@@ -59,7 +59,6 @@ jobs:
           output-file: pdf-fmt
           warn-implicit-exceptions: true
           warn-unusual-code: true
-          nofollow-import-to: tkinter, turtle, idlelib, pydoc, unittest, pytest, webbrowser
           copyright: "Copyright (C) 2025 bladeacer. Licensed under GPLv3."
 
           product-name: pdf-fmt

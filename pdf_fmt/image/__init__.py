@@ -1,12 +1,13 @@
 import os
-import glob
 import re
 import io
-import multiprocessing
+import glob
 import time
+import base64
+import multiprocessing
+
 from PIL import Image
-import imagehash
-from typing import Optional, List, Tuple, Set
+from typing import Optional, List, Tuple
 
 import pdfplumber
 
@@ -168,28 +169,101 @@ on {final_cores} cores.""")
             print(f"FATAL: Multiprocessing failed: {e}")
 
 
+def _calculate_dhash(image: Image.Image, hash_size: int = 8) -> int:
+    """
+    Computes a Difference Hash (dHash).
+    """
+    img = image.convert("L").resize(
+        (hash_size + 1, hash_size),
+        Image.Resampling.LANCZOS
+    )
+    pixels = list(img.getdata())
+
+    diff_hash = 0
+    for row in range(hash_size):
+        for col in range(hash_size):
+            idx = row * (hash_size + 1) + col
+            left = pixels[idx]
+            right = pixels[idx + 1]
+
+            if left > right:
+                diff_hash |= 1 << (row * hash_size + col)
+
+    return diff_hash
+
+
+def _hamming_distance(h1: int, h2: int) -> int:
+    """Calculates the number of differing bits between two hashes."""
+    return (h1 ^ h2).bit_count()
+
+
 def _discard_similar_images(output_dir: str, discard_threshold: int) -> None:
-    hash_tolerance = max(1, int((100 - discard_threshold) * 0.7))
-    unique_hashes: Set[imagehash.ImageHash] = set()
+    """
+    Removes similar images using a custom dHash implementation.
+    Dynamically scans all extensions supported by Pillow and validated by _get_format_details.
+    """
+    hash_tolerance = int((100 - discard_threshold) * 0.64)
+    unique_hashes: List[int] = []
     total_files, discarded_count = 0, 0
 
-    for ext in ('*.png', '*.jpg', '*.jpeg'):
-        for filename in glob.glob(os.path.join(output_dir, ext)):
-            total_files += 1
-            try:
+    supported_exts = set(Image.registered_extensions().keys())
+    supported_exts.add('.svg')
+
+    all_files = os.listdir(output_dir)
+    files_to_check = []
+
+    for f in all_files:
+        ext = os.path.splitext(f)[1].lower()
+        if ext in supported_exts:
+            format_name = ext.lstrip('.')
+            if _get_format_details(format_name):
+                files_to_check.append(os.path.join(output_dir, f))
+
+    files_to_check.sort()
+
+    for filename in files_to_check:
+        total_files += 1
+        try:
+            current_hash = None
+            ext = os.path.splitext(filename)[1].lower()
+
+            # SVG Wrapper
+            if ext == '.svg':
+                with open(filename, 'r') as f:
+                    content = f.read()
+                    match = re.search(
+                        r'data:image/png;base64,([A-Za-z0-9+/=]+)',
+                        content
+                    )
+                    if match:
+                        img_data = base64.b64decode(match.group(1))
+                        with Image.open(io.BytesIO(img_data)) as img:
+                            current_hash = _calculate_dhash(img)
+
+            else:
                 with Image.open(filename) as img:
-                    current_hash = imagehash.phash(img)
-                    hash_cond = any(current_hash - h <= hash_tolerance
-                                    for h in unique_hashes)
-                    if hash_cond:
-                        os.remove(filename)
-                        discarded_count += 1
-                    else:
-                        unique_hashes.add(current_hash)
-            except Exception:
+                    current_hash = _calculate_dhash(img)
+
+            if current_hash is None:
                 continue
-    print(f"""INFO: Similarity check:
-Discarded {discarded_count}/{total_files}.""")
+
+            is_duplicate = False
+            for h in unique_hashes:
+                if _hamming_distance(current_hash, h) <= hash_tolerance:
+                    os.remove(filename)
+                    discarded_count += 1
+                    is_duplicate = True
+                    break
+
+            if not is_duplicate:
+                unique_hashes.append(current_hash)
+
+        except Exception as e:
+            print(f"Warning: Image de-duplication failed: {e}")
+            continue
+
+    print(f"INFO: Similarity check (Tolerance: {hash_tolerance} bits):")
+    print(f"      Discarded {discarded_count}/{total_files} images.")
 
 
 def _extract_and_format_images(
