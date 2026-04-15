@@ -4,6 +4,8 @@ import re
 import multiprocessing
 import pdfplumber
 
+from pdf_fmt.formatting import fix_spacing
+
 PYPERCLIP_WARN = "Warning: 'pyperclip' library not found. Clipboard functionality disabled."
 
 
@@ -58,126 +60,38 @@ class PageProcessArgs(NamedTuple):
     ignore_list: List[str]
 
 
-def _process_page_text_block(args: PageProcessArgs) -> List[str]:
-    """
-    Processes a single page block. Re-creates filter functions locally
-    for picklability in multiprocessing environments.
-    """
-    if not args.page_text.strip():
-        return []
-
-    from pdf_fmt.core import (
-        split_fmt_line, compile_footer_patterns,
-        ln_cont_factory, is_ft_factory, format_indented_line
-    )
-    from pdf_fmt.formatting import clean_and_lint_text
-
-    fmt_cfg = args.config.get("formatting", {})
-    min_chars = fmt_cfg.get("min_chars_per_line", 0)
-    max_chars = fmt_cfg.get("max_chars_per_line", 80)
-    enforce_cap = fmt_cfg.get("enforce_line_capitalization", False)
-    page_sep_mode = fmt_cfg.get("page_separator", "--- PAGE SEPARATOR ---")
-
-    allowed_pattern = re.compile(args.allowed_chars_regex)
-    compiled_footers = compile_footer_patterns(args.footer_patterns)
-
-    filter_content = ln_cont_factory(allowed_pattern)
-    is_footer = is_ft_factory(compiled_footers)
-
-    processed_content: List[str] = []
-    if args.page_num > 0:
-        separators = {
-            "___": "___",
-            "--- PAGE SEPARATOR ---": f"\n--- Page {args.page_num + 1} ---"
-        }
-        if (sep := separators.get(page_sep_mode)):
-            processed_content.append(sep)
-
-    valid_lines: List[str] = []
-    for raw_line in args.page_text.splitlines():
-        filtered = filter_content(raw_line)
-
-        if not filtered or is_footer(filtered):
-            continue
-
-        cleaned = clean_and_lint_text(filtered, args.spelling_locale, args.ignore_list)
-        formatted = format_indented_line(cleaned)
-
-        if formatted.strip():
-            valid_lines.append(formatted)
-
-    line_buffer = ""
-
-    def flush_buffer(buffer: str):
-        if buffer:
-            processed_content.extend(split_fmt_line(buffer, max_chars, enforce_cap))
-
-    for line in valid_lines:
-        stripped = line.strip()
-
-        is_break_type = (
-            stripped.startswith(('-', '*')) or
-            re.search(r'[.?!]$', stripped) or
-            len(stripped) >= min_chars
-        )
-
-        if is_break_type:
-            flush_buffer(line_buffer)
-            line_buffer = line
-        else:
-            sep = "" if line_buffer.endswith('-') else " "
-            line_buffer = (line_buffer + sep + stripped) if line_buffer else stripped
-
-    flush_buffer(line_buffer)
-
-    return processed_content
-
-
-def _to_markdown_table(table: List[List[Optional[str]]]) -> str:
-    """Converts a list-of-lists table into a GitHub-flavored Markdown table."""
-    if not table or not any(table):
-        return ""
-
-    # Clean None values and newlines
-    clean_table = [
-        [" " if cell is None else cell.replace("\n", " ").strip() for cell in row]
-        for row in table
-    ]
-
-    headers = clean_table[0]
-    rows = clean_table[1:]
-
-    markdown = f"| {' | '.join(headers)} |\n"
-    markdown += f"| {' | '.join(['---'] * len(headers))} |\n"
-
-    for row in rows:
-        # Pad row if it's shorter than headers
-        if len(row) < len(headers):
-            row.extend([""] * (len(headers) - len(row)))
-        markdown += f"| {' | '.join(row)} |\n"
-
-    return markdown + "\n"
-
-
 def _get_page_elements(page, table_config: Dict[str, Any]) -> List[Tuple[float, str]]:
-    """Extracts and sorts tables and text for a single page."""
     tables = page.find_tables(table_settings=table_config)
+    # Get bboxes and expand them by a tiny margin to catch "ghost" text
+    table_bboxes = [t.bbox for t in tables]
 
     def is_outside_tables(obj):
-        t_top, t_bottom = obj.get("top"), obj.get("bottom")
-        if t_top is None or t_bottom is None:
+        x0, top = obj.get("x0"), obj.get("top"),
+        x1, bottom = obj.get("x1"), obj.get("bottom")
+        if None in (x0, top, x1, bottom):
             return True
-        return not any(t.bbox[1] <= t_top and t_bottom <= t_bottom for t in tables)
+
+        for b in table_bboxes:
+            # If any part of the text char is within 2pts of a table, filter it
+            if not (
+                x1 < b[0]-2 or x0 > b[2]+2
+                or bottom < b[1]-2 or top > b[3]+2
+            ):
+                return False
+        return True
 
     elements: List[Tuple[float, str]] = []
-
     for table in tables:
         raw = table.extract()
         if raw:
+            # We wrap the table in a unique marker to prevent the text
+            # processor from thinking it's just a normal line
             elements.append((table.bbox[1], _to_markdown_table(raw)))
 
     clean_page = page.filter(is_outside_tables)
-    text = clean_page.extract_text(layout=True, use_text_flow=True)
+    text = clean_page.extract_text(x_tolerance=2, y_tolerance=2)
+    text = fix_spacing(text)
+
     if text:
         elements.append((0, text))
 
@@ -185,17 +99,143 @@ def _get_page_elements(page, table_config: Dict[str, Any]) -> List[Tuple[float, 
     return elements
 
 
+def _get_separator(page_num: int, mode: str) -> str:
+    """Returns the formatted page separator based on config."""
+    if page_num <= 0:
+        return ""
+    separators = {
+        "___": "\n\n___\n\n",
+        "--- PAGE SEPARATOR ---": f"\n\n--- Page {page_num + 1} ---\n\n"
+    }
+    return separators.get(mode, "")
+
+
+def _update_line_buffer(buffer: str, line: str) -> str:
+    """Handles the concatenation logic for the line buffer."""
+    if not buffer:
+        return line
+    sep = "" if buffer.endswith('-') else " "
+    return f"{buffer}{sep}{line.strip()}"
+
+
+def _process_page_text_block(args: PageProcessArgs) -> List[str]:
+    """Processes a single page block with reduced complexity."""
+    if not args.page_text.strip():
+        return []
+
+    from pdf_fmt.core import (
+        split_fmt_line, compile_footer_patterns, ln_cont_factory,
+        is_ft_factory, format_indented_line
+    )
+    from pdf_fmt.formatting import clean_and_lint_text
+
+    cfg = args.config.get("formatting", {})
+    max_chars = cfg.get("max_chars_per_line", 80)
+    enforce_cap = cfg.get("enforce_line_capitalization", False)
+
+    filter_content = ln_cont_factory(re.compile(args.allowed_chars_regex))
+    is_footer = is_ft_factory(compile_footer_patterns(args.footer_patterns))
+
+    processed_content: List[str] = []
+    line_buffer = ""
+    in_table = False
+
+    def flush_buffer(buf: str):
+        if buf:
+            processed_content.extend(split_fmt_line(
+                buf, max_chars, enforce_cap
+            ))
+
+    for raw_line in args.page_text.splitlines():
+        filtered = filter_content(raw_line)
+        if not filtered or is_footer(filtered):
+            continue
+
+        cleaned = clean_and_lint_text(
+            filtered, args.spelling_locale, args.ignore_list
+        )
+        trimmed = cleaned.strip()
+        is_table = trimmed.startswith('|') and trimmed.endswith('|')
+
+        # Table State Handling
+        if is_table:
+            if not in_table:
+                flush_buffer(line_buffer)
+                line_buffer = ""
+                processed_content.append("")
+                in_table = True
+            processed_content.append(trimmed)
+            continue
+        elif in_table:
+            processed_content.append("")
+            in_table = False
+
+        # Text Wrapping Logic
+        formatted = format_indented_line(cleaned)
+        if not formatted.strip():
+            continue
+
+        is_break = (trimmed.startswith(('-', '*')) or
+                    re.search(r'[.?!]$', trimmed) or
+                    len(trimmed) >= cfg.get("min_chars_per_line", 0))
+
+        if is_break:
+            flush_buffer(line_buffer)
+            line_buffer = formatted
+        else:
+            line_buffer = _update_line_buffer(line_buffer, formatted)
+
+    flush_buffer(line_buffer)
+
+    if (sep := _get_separator(args.page_num, cfg.get("page_separator"))):
+        processed_content.append(sep)
+
+    return processed_content
+
+
+def _to_markdown_table(table: List[List[Optional[str]]]) -> str:
+    """Converts a table but avoids printing empty/broken Markdown structures."""
+    if not table or len(table) < 1:
+        return ""
+
+    clean_table = [
+        [" " if c is None else c.replace("\n", " ").strip() for c in row]
+        for row in table if any(c is not None for c in row)
+    ]
+
+    if len(clean_table) < 2 or not any(clean_table[0]):
+        return "\n" + "\n".join(" ".join(row) for row in clean_table) + "\n"
+
+    headers = clean_table[0]
+    col_count = len(headers)
+
+    lines = [
+        f"| {' | '.join(headers)} |",
+        f"| {' | '.join(['---'] * col_count)} |"
+    ]
+
+    for row in clean_table[1:]:
+        # Standardize row length to header length
+        row = row[:col_count] + [""] * (col_count - len(row))
+        lines.append(f"| {' | '.join(row)} |")
+
+    return "\n" + "\n".join(lines) + "\n"
+
+
 def _run_processing_pool(args_list: List[Any], cores: int) -> List[str]:
     """Handles the switch between parallel and sequential execution."""
     if len(args_list) > 1 and cores > 1:
         try:
             with multiprocessing.Pool(processes=cores) as pool:
-                return [line for page_result in pool.map(_process_page_text_block, args_list) 
+                return [line for page_result in pool.map(
+                    _process_page_text_block, args_list
+                )
                         for line in page_result]
         except Exception as e:
             print(f"Warning: Multiprocessing failed ({e}). Falling back to sequential.")
 
-    return [line for args in args_list for line in _process_page_text_block(args)]
+    return [line for args in args_list
+            for line in _process_page_text_block(args)]
 
 
 def extract_text_from_pdf(
@@ -225,7 +265,9 @@ def extract_text_from_pdf(
         with pdfplumber.open(pdf_path) as pdf:
             for page in pdf.pages:
                 elements = _get_page_elements(page, table_cfg)
-                page_data_blocks.append("\n\n".join(content for _, content in elements))
+                page_data_blocks.append(
+                    "\n\n".join(content for _, content in elements)
+                )
     except Exception as e:
         return None, f"An error occurred during PDF parsing: {e}"
 

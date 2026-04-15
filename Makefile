@@ -15,6 +15,7 @@ help:
 	@echo "Targets:"
 	@echo "  setup         Sync .venv and update requirements.txt"
 	@echo "  install       Install project locally using uv"
+	@echo "  sync          setup + install"
 	@echo "  test          Run unit tests using .venv"
 	@echo "  run           Run pdf-fmt.py using .venv"
 	@echo "  compile       Build standalone binary using .venv-build"
@@ -63,6 +64,10 @@ compile:
 
 install:
 	uv tool install --editable .
+
+sync:
+	$(MAKE) setup
+	$(MAKE) install
 
 run-compiled: compile
 	@if [ -f $(EXE) ]; then \

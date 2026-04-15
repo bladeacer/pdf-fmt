@@ -199,7 +199,7 @@ sdist = { url = "https://files.pythonhosted.org/packages/1c/48/e54130d57b89fc015
 
 [[package]]
 name = "pdf-fmt"
-version = "0.7.2"
+version = "0.7.3"
 source = { editable = "." }
 dependencies = [
     { name = "breame" },
