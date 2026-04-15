@@ -1,6 +1,0 @@
-pyyaml
-pdfminer.six[image]
-pyperclip
-breame
-Pillow
-imagehash

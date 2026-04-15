@@ -19,7 +19,6 @@ help:
 	@echo "  run           Run pdf-fmt.py using .venv"
 	@echo "  compile       Build standalone binary using .venv-build"
 	@echo "  run-compiled  Execute the compiled binary"
-	@echo "  act           Run local GitHub Actions via act"
 	@echo "  clean         Remove venvs, build artifacts, and logs"
 
 setup:
@@ -50,6 +49,16 @@ compile:
 		--show-memory \
 		--show-scons \
 		--mode=app \
+		--nofollow-import-to=tkinter \
+		--nofollow-import-to=turtle \
+		--nofollow-import-to=idlelib \
+		--nofollow-import-to=pydoc \
+		--nofollow-import-to=test \
+		--nofollow-import-to=unittest \
+		--nofollow-import-to=webbrowser \
+		--noinclude-setuptools-mode=nofollow \
+		--noinclude-unittest-mode=nofollow \
+		--noinclude-pytest-mode=nofollow \
 		--python-flag=no_docstrings \
 		--warn-unusual-code \
 		--output-file=pdf-fmt \
@@ -70,17 +79,6 @@ run-compiled: compile
 		echo "Error: Binary not found. Run 'make compile' first."; \
 		exit 1; \
 	fi
-
-act:
-	act push \
-		--job build \
-		--eventpath ../.github/workflows/push_tag_event.json \
-		--secret GITHUB_TOKEN="<YOUR_PAT>" \
-		--env GITHUB_REF=refs/tags/latest \
-		--env GITHUB_SHA=$$(git rev-parse HEAD) \
-		-P macos-latest=nektos/act-environments-ubuntu:22.04 \
-		--artifact-server-path /tmp/artifacts \
-		--verbose
 
 clean:
 	rm -rf $(VENV_DEV) $(VENV_BUILD) $(BUILD_DIR) $(LOG_FILE)

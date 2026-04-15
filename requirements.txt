@@ -5,19 +5,11 @@ breame
 cffi
     # via cryptography
 charset-normalizer
-    # via
-    #   pdfminer-six
-    #   reportlab
+    # via pdfminer-six
 cryptography
     # via pdfminer-six
-cssselect2
-    # via svglib
-freetype-py
-    # via rlpycairo
 imagehash
     # via pdf-fmt
-lxml
-    # via svglib
 numpy
     # via
     #   imagehash
@@ -37,9 +29,6 @@ pillow
     #   imagehash
     #   pdf-fmt
     #   pdfplumber
-    #   reportlab
-pycairo
-    # via rlpycairo
 pycparser
     # via cffi
 pypdfium2
@@ -52,25 +41,9 @@ pywavelets
     # via imagehash
 pyyaml
     # via pdf-fmt
-reportlab
-    # via
-    #   pdf-fmt
-    #   svglib
-rlpycairo
-    # via svglib
 scipy
     # via imagehash
 scipy
     # via imagehash
-svglib
-    # via pdf-fmt
-tinycss2
-    # via
-    #   cssselect2
-    #   svglib
 typing-extensions
     # via cryptography
-webencodings
-    # via
-    #   cssselect2
-    #   tinycss2
