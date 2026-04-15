@@ -37,14 +37,14 @@ jobs:
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.11'
+          python-version: '3.12'
           architecture: 'x64'
           cache: 'pip'
           cache-dependency-path: |
-            **/requirements-ci.txt
+            **/requirements.txt
 
       - name: Install Dependencies
-        run: pip install -r requirements-ci.txt
+        run: pip install -r requirements.txt
 
       - name: Build Executable
         uses: Nuitka/Nuitka-Action@main
@@ -59,13 +59,7 @@ jobs:
           output-file: pdf-fmt
           warn-implicit-exceptions: true
           warn-unusual-code: true
-          nofollow-import-to: tkinter
-          nofollow-import-to: turtle
-          nofollow-import-to: idlelib
-          nofollow-import-to: pydoc
-          nofollow-import-to: unittest
-          nofollow-import-to: pytest
-          nofollow-import-to: webbrowser
+          nofollow-import-to: tkinter, turtle, idlelib, pydoc, unittest, pytest, webbrowser
           copyright: "Copyright (C) 2025 bladeacer. Licensed under GPLv3."
 
           product-name: pdf-fmt

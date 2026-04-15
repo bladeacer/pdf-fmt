@@ -350,9 +350,9 @@ You may need to install [patchelf](https://github.com/NixOS/patchelf)
 
 | Python Version | Known to work? | Comments |
 | --- | --- | --- |
-| 3.10 | Yes | Compiling from source, script works. Used as default compilation version. |
-| 3.11 | Yes | Compiling from source, script works. Used in GitHub Actions. |
-| 3.12 | Untested | PRs welcome |
+| 3.10 | Yes | Compiling from source, script works. Used as default compilation/script version. |
+| 3.11 | Yes | Compiling from source, script works. |
+| 3.12 | Yes | Compiling from source, script works. Used in GitHub Actions. |
 | 3.13 | Partial | Compiling from source, script works. |
 | 3.14 | Untested | PRs welcome |
 
