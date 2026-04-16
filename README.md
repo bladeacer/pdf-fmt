@@ -100,6 +100,13 @@ uv tool install git+https://github.com/bladeacer/pdf-fmt
 pdf-fmt
 ```
 
+Or if you prefer a specific version.
+
+```
+uv tool install git+https://github.com/bladeacer/pdf-fmt@0.7.3
+pdf-fmt
+```
+
 ## Download from Release Page
 
 For **Windows and Linux users**, You can get the compiled binary

@@ -25,7 +25,7 @@ def main():
 
     try:
         from pdf_fmt import config
-        from parser import execute_main_pipeline
+        from pdf_fmt.parser import execute_main_pipeline
 
         CONFIG: Dict[str, Any] = config.load_config()
 
