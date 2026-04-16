@@ -228,7 +228,7 @@ Requires running the script installer or the following commands. This example
 assumes the use of Linux. See the [script usage example](#using-the-script-installer)
 on how to activate virtual environment for each OS.
 
-It is recommended to use [py-env](https://github.com/pyenv/pyenv) to manage
+It is recommended to use [pyenv](https://github.com/pyenv/pyenv) to manage
 different versions of Python. It is also recommended to install [ccache](https://github.com/ccache/ccache)
 for compiled binaries to be cached. You would also need [the following `nuitka` requirements](https://github.com/Nuitka/Nuitka).
 
