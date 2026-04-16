@@ -4,7 +4,7 @@
 set -e
 
 # Get the Version Number
-echo "Enter the new version number (e.g., 1.4.0):"
+echo "Enter the new version number (e.g., 1.0.0):"
 read VERSION_NUMBER
 
 if [ -z "$VERSION_NUMBER" ]; then

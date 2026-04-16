@@ -5,6 +5,7 @@ import getpass
 import ctypes
 import argparse
 import re
+import importlib.metadata
 
 
 def get_script_version() -> str:
@@ -19,10 +20,14 @@ def get_script_version() -> str:
         return ci_version
 
     try:
+        return importlib.metadata.version("pdf-fmt")
+    except importlib.metadata.PackageNotFoundError:
+        pass
+
+    try:
         base_dir = os.path.dirname(os.path.abspath(__file__))
 
         candidates = [
-            os.path.join(base_dir, "pyproject.toml"),
             os.path.join(base_dir, "..", "..", "pyproject.toml")
         ]
 
