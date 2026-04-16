@@ -50,6 +50,7 @@ jobs:
         uses: Nuitka/Nuitka-Action@main
         env:
           PDF_FMT_CI_BUILD: 1
+          PDF_FMT_VERSION: ${{ env.VERSION_NUMBER }}
         with:
           nuitka-version: main
           script-name: build.py
