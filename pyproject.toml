@@ -21,6 +21,9 @@ Repository = "https://github.com/bladeacer/pdf-fmt"
 [project.scripts]
 pdf-fmt = "pdf_fmt.main:main"
 
+[tool.hatch.build.targets.wheel]
+packages = ["pdf_fmt", "parser.py"]
+
 [dependency-groups]
 build = [
   "nuitka"
