@@ -109,10 +109,10 @@ pdf-fmt
 
 ## Download from Release Page
 
-For **Windows and Linux users**, You can get the compiled binary
+You can get the compiled binary
 [the latest release](https://github.com/bladeacer/pdf-fmt/releases/latest).
 
-After downloading, Open PowerShell or the terminal on Linux.
+After downloading, Open PowerShell or the terminal on Linux/MacOS.
 
 On Windows, run:
 
@@ -124,7 +124,7 @@ mv pdf-fmt-x64-0.6.1.exe pdf-fmt.exe
 
 For Windows users, remember to [set execution policy](https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.security/set-executionpolicy).
 
-On Linux, run:
+On Linux/MacOS, run:
 
 ```bash
 cd Downloads
@@ -138,6 +138,17 @@ You can also choose to do the following after this step:
 * Adding it to your system `$PATH`
 * Set an alias pointing to the binary or renaming it manually
 * Creating the [configuration file](#configuration)
+
+### Currently supported architectures
+
+| Platform | Architecture |
+| --- | --- |
+| Windows | x86-64 |
+| Windows | arm64 |
+| Linux | x86-64 |
+| Linux | arm64 |
+| MacOS | x86-64 |
+| MacOS | arm64 |
 
 ## About Downloaded Binaries
 
