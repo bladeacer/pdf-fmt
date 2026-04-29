@@ -55,7 +55,7 @@ jobs:
       - name: Inject Version into Script
         shell: bash
         run: |
-          sed -i 's/return "0.1.0"/return "${{ env.VERSION_NUMBER }}"/g' pdf_fmt/startup/__init__.py
+          perl -pi -e 's/return "0.1.0"/return "${{ env.VERSION_NUMBER }}"/g' pdf_fmt/startup/__init__.py
 
       - name: Build Executable
         uses: Nuitka/Nuitka-Action@main
