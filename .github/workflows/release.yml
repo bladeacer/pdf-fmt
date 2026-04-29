@@ -45,13 +45,17 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-          # This will install the correct architecture of Python
           architecture: ${{ matrix.arch }}
           cache: 'pip'
           cache-dependency-path: '**/requirements.txt'
 
       - name: Install Dependencies
         run: pip install -r requirements.txt
+
+      - name: Inject Version into Script
+        shell: bash
+        run: |
+          sed -i 's/return "0.1.0"/return "${{ env.VERSION_NUMBER }}"/g' pdf_fmt/startup/__init__.py
 
       - name: Build Executable
         uses: Nuitka/Nuitka-Action@main

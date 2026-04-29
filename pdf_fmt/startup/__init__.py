@@ -123,6 +123,7 @@ Path to the PDF or convertibel file (e.g. pptx, docx) to process.
 """
 
     parser = argparse.ArgumentParser(
+        prog='pdf_fmt',
         description=default_str,
         formatter_class=argparse.RawTextHelpFormatter
     )
