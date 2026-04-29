@@ -79,12 +79,20 @@ jobs:
           else
             mv build/pdf-fmt ${{ env.EXECUTABLE_NAME }} || mv build/pdf-fmt.bin ${{ env.EXECUTABLE_NAME }}
           fi
+
+          if command -v sha256sum >/dev/null 2>&1; then
+            sha256sum ${{ env.EXECUTABLE_NAME }} > ${{ env.EXECUTABLE_NAME }}.sha256
+          else
+            shasum -a 256 ${{ env.EXECUTABLE_NAME }} > ${{ env.EXECUTABLE_NAME }}.sha256
+          fi
           
       - name: Upload Renamed Executable
         uses: actions/upload-artifact@v4
         with:
           name: release-assets-${{ matrix.os }}-${{ matrix.arch }}
-          path: ${{ env.EXECUTABLE_NAME }}
+          path: |
+            ${{ env.EXECUTABLE_NAME }}
+            ${{ env.EXECUTABLE_NAME }}.sha256
           retention-days: 1
 
   release:

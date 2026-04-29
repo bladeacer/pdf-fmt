@@ -115,31 +115,48 @@ by `uv`.
 You can get the compiled binary
 [the latest release](https://github.com/bladeacer/pdf-fmt/releases/latest).
 
+We recommend also downloading the associated `.sha256` files to verify checksums.
+Place these and the executable in the same folder.
+
 After downloading, Open PowerShell or the terminal on Linux/MacOS.
 
 On Windows, run:
 
 ```ps1
-cd Downloads
-mv pdf-fmt-x64-0.6.1.exe pdf-fmt.exe
+cd ~/Downloads
+CertUtil -hashfile pdf-fmt-<arch>-<version-no>.exe SHA256
+mv pdf-fmt-<arch>-<version-no>.exe pdf-fmt.exe
 ./pdf-fmt.exe
 ```
 
-For Windows users, remember to [set execution policy](https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.security/set-executionpolicy).
+After running `CertUtil`, open the `.sha256` file in your
+favourite text editor. If the string in the terminal matches
+the string in the file, your download is safe.
 
-On Linux/MacOS, run:
+On Linux, run:
 
 ```bash
-cd Downloads
-mv pdf-fmt-<arch>-<version-no.> pdf-fmt
-chmod +x ./pdf-fmt
+cd ~/Downloads
+sha256sum --check pdf-fmt-<arch>-<version-no>.sha256
+chmod +x pdf-fmt-<arch>-<version-no>
+mv pdf-fmt-<arch>-<version-no> pdf-fmt
 ./pdf-fmt
 ```
 
-For Mac users, you might need to run the following:
+If you see OK after calling `sha256sum`, the file is verified.
+
+On Mac, run:
+
 ```
+cd ~/Downloads
+shasum -a 256 --check pdf-fmt-<arch>-<version-no>.sha256
+chmod +x pdf-fmt-<arch>-<version-no>
+mv pdf-fmt-<arch>-<version-no> pdf-fmt
 xattr -d com.apple.quarantine pdf-fmt
+./pdf-fmt
 ```
+
+If you see OK after calling `shasum`, the file is verified.
 
 You can also choose to do the following after this step:
 
@@ -363,8 +380,9 @@ compiling from source.
 | **Ubuntu LTS x64 (Debian-based)** | Wayland | `glibc` | Untested | Contributions are welcome |
 | **Ubuntu LTS x64 (Debian-based)** | X11 | `glibc` | Untested | Contributions are welcome |
 | **macOS 14 (Sonoma)** | N/A | `libSystem` (BSD `libc`) | Untested | Contributions are welcome |
-| **Windows 10 x86** | N/A | `MSVCRT` (via `MSVC`/`MinGW`) | Untested | Contributions are welcome |
+| **Windows 10 x64** | N/A | `MSVCRT` (via `MSVC`/`MinGW`) | Untested | Contributions are welcome |
 | **Windows 11 x64** | N/A | `MSVCRT` (via `MSVC`/`MinGW`) | Partial | Binary works out of the box. Contributions are welcome for script/compiling from source |
+| **Windows Subsystem for Linux (WSL) 2 x64** | N/A | `glibc`/`musl`| Untested | Contributions are welcome |
 
 ### Note: Linux users
 
