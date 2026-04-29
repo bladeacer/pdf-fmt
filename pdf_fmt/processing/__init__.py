@@ -127,7 +127,7 @@ def _process_page_text_block(args: PageProcessArgs) -> List[str]:
         split_fmt_line, compile_footer_patterns, ln_cont_factory,
         is_ft_factory, format_indented_line
     )
-    from pdf_fmt.formatting import clean_and_lint_text
+    from pdf_fmt.formatting import clean_and_lint_text, replace_unicode_chars
 
     cfg = args.config.get("formatting", {})
     max_chars = cfg.get("max_chars_per_line", 0)
@@ -147,7 +147,9 @@ def _process_page_text_block(args: PageProcessArgs) -> List[str]:
             ))
 
     for raw_line in args.page_text.splitlines():
-        filtered = filter_content(raw_line)
+        filtered = replace_unicode_chars(raw_line)
+        filtered = filter_content(filtered)
+
         if not filtered or is_footer(filtered):
             continue
 
