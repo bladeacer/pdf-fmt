@@ -12,13 +12,7 @@ jobs:
         include:
           - os: windows-latest
             arch: x64
-          - os: windows-latest
-            arch: arm64
           - os: ubuntu-latest
-            arch: x64
-          - os: ubuntu-latest
-            arch: arm64
-          - os: macos-13
             arch: x64
           - os: macos-latest
             arch: arm64
@@ -27,7 +21,7 @@ jobs:
 
     steps:
       - name: Check-out repository
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
       - name: Set Version and OS-Specific Flags
         id: set_flags
@@ -79,8 +73,10 @@ jobs:
         run: |
           if [ "${{ runner.os }}" == "Windows" ]; then
             mv build/*.exe ${{ env.EXECUTABLE_NAME }}
+          elif [ "${{ runner.os }}" == "macOS" ]; then
+            BINARY_PATH=$(find build -type f -name "pdf-fmt" | head -n 1)
+            mv "$BINARY_PATH" ${{ env.EXECUTABLE_NAME }}
           else
-            # Handles both Linux and macOS naming
             mv build/pdf-fmt ${{ env.EXECUTABLE_NAME }} || mv build/pdf-fmt.bin ${{ env.EXECUTABLE_NAME }}
           fi
           

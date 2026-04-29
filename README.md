@@ -107,6 +107,9 @@ uv tool install git+https://github.com/bladeacer/pdf-fmt@0.7.3
 pdf-fmt
 ```
 
+This should work for most platforms and architectures which are supported 
+by `uv`.
+
 ## Download from Release Page
 
 You can get the compiled binary
@@ -133,22 +136,29 @@ chmod +x ./pdf-fmt
 ./pdf-fmt
 ```
 
+For Mac users, you might need to run the following:
+```
+xattr -d com.apple.quarantine pdf-fmt
+```
+
 You can also choose to do the following after this step:
 
 * Adding it to your system `$PATH`
 * Set an alias pointing to the binary or renaming it manually
 * Creating the [configuration file](#configuration)
 
-### Currently supported architectures
+### Available architectures for binaries
 
 | Platform | Architecture |
 | --- | --- |
 | Windows | x86-64 |
-| Windows | arm64 |
 | Linux | x86-64 |
 | Linux | arm64 |
 | MacOS | x86-64 |
 | MacOS | arm64 |
+
+For other platforms or architectures, we recommend using `uv tool install`,
+the script installer or compiling from source.
 
 ## About Downloaded Binaries
 
@@ -343,9 +353,9 @@ compiling from source.
 | **Arch Linux x64** | X11 | `glibc` | Untested | Contributions are welcome |
 | **Debian x64 (glibc)** | Wayland | `glibc` | Untested | Contributions are welcome |
 | **Debian x86 (glibc)** | X11 | `glibc` | Untested | Contributions are welcome |
-| **EndeavourOS x64 (Arch-based)** | Wayland | `glibc` | Partial | Script works out of the box. Contributions are welcome for binary/compiling from source |
+| **EndeavourOS x64 (Arch-based)** | Wayland | `glibc` | Partial | Script works out of the box. Contributions are welcome for binary/compiling from source. |
 | **EndeavourOS x64 (Arch-based)** | X11 | `glibc` | Yes | Binary/script/compiling from source works. |
-| **Fedora 43 x64 (RPM-based)** | Wayland | `glibc` | Partial | Binary works out of the box. Contributions are welcome for script/compiling from source |
+| **Fedora x64 (RPM-based)** | Wayland | `glibc` | Partial | Binary works out of the box. Contributions are welcome for script/compiling from source |
 | **Fedora x64 (RPM-based)** | X11 | `glibc` | Untested | Contributions are welcome |
 | **FreeBSD stable x64** | X11 | `BSD libc` | Untested | Contributions are welcome |
 | **NetBSD x64** | X11 | `BSD libc` | Untested | Contributions are welcome |
