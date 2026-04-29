@@ -136,22 +136,26 @@ Path to the file. Use '-' or leave empty to read from stdin (pipe).
         help="Show script's version and exit."
     )
 
-    args = parser.parse_args()
+    try:
+        args = parser.parse_args()
 
-    cond: bool = (args.file_path == "-" or
-                  (args.file_path is None and not sys.stdin.isatty())
-                  )
+        cond: bool = (args.file_path == "-" or
+                      (args.file_path is None and not sys.stdin.isatty())
+                      )
 
-    if cond:
-        args.file_path = "-"
-        return args
+        if cond:
+            args.file_path = "-"
+            return args
 
-    # 3. If path is None and no pipe, show help.
-    if args.file_path is None:
-        parser.print_help()
-        raise StartupCheckError("", 0)
+        if args.file_path is None:
+            parser.print_help()
+            raise StartupCheckError("", 0)
 
-    # 4. Normal file check
+    except BrokenPipeError:
+        devnull = os.open(os.devnull, os.O_WRONLY)
+        os.dup2(devnull, sys.stdout.fileno())
+        sys.exit(0)
+
     if not os.path.exists(args.file_path):
         message = f"Error: Input file not found at path: '{args.file_path}'"
         raise StartupCheckError(message, 1)

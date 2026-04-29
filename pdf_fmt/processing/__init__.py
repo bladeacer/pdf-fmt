@@ -58,6 +58,7 @@ class PageProcessArgs(NamedTuple):
     footer_patterns: List[str]
     spelling_locale: str
     ignore_list: List[str]
+    total_pages: int
 
 
 def _get_page_elements(page, table_config: Dict[str, Any]) -> List[Tuple[float, str]]:
@@ -89,7 +90,10 @@ def _get_page_elements(page, table_config: Dict[str, Any]) -> List[Tuple[float, 
             elements.append((table.bbox[1], _to_markdown_table(raw)))
 
     clean_page = page.filter(is_outside_tables)
-    text = clean_page.extract_text(x_tolerance=2, y_tolerance=2)
+    text = clean_page.extract_text(
+        layout=True, use_text_flow=True,
+        x_tolerance=2, y_tolerance=2
+    )
     text = fix_spacing(text)
 
     if text:
@@ -189,8 +193,11 @@ def _process_page_text_block(args: PageProcessArgs) -> List[str]:
 
     flush_buffer(line_buffer)
 
-    if (sep := _get_separator(args.page_num, cfg.get("page_separator"))):
-        processed_content.append(sep)
+    is_last_page = (args.page_num + 1) >= args.total_pages
+
+    if not is_last_page:
+        if (sep := _get_separator(args.page_num, cfg.get("page_separator"))):
+            processed_content.append(sep)
 
     return processed_content
 
@@ -273,6 +280,8 @@ def extract_text_from_pdf(
     except Exception as e:
         return None, f"An error occurred during PDF parsing: {e}"
 
+    total_count = len(page_data_blocks)
+
     pool_args = [
         PageProcessArgs(
             page_num=i,
@@ -281,7 +290,8 @@ def extract_text_from_pdf(
             allowed_chars_regex=allowed_chars_regex_string,
             footer_patterns=footer_regex_patterns,
             spelling_locale=spelling_locale,
-            ignore_list=ignore_list
+            ignore_list=ignore_list,
+            total_pages=total_count
         )
         for i, block in enumerate(page_data_blocks)
     ]

@@ -34,7 +34,8 @@ def main():
     except BrokenPipeError:
         devnull = os.open(os.devnull, os.O_WRONLY)
         os.dup2(devnull, sys.stdout.fileno())
-        sys.exit(0)
+        sys.stdout.close()
+        os._exit(0)
     except Exception as e:
         print(f"Unknown error: {e}")
         sys.exit(1)

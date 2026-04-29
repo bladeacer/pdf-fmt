@@ -160,6 +160,7 @@ def format_indented_line(line: str) -> str:
     already a list.
     """
     normalized_line = line.replace(NBSP, ' ')
+    normalized_line = line.replace("\n", "\n\n")
     if normalized_line.startswith(' '):
         if not normalized_line.startswith('  '):
             if not re.match(r'^\s*[-*]', normalized_line.lstrip()):

@@ -73,16 +73,7 @@ def execute_main_pipeline(config: Dict[str, Any]) -> None:
     """
     Executes the main pipeline by coordinating specialized helpers.
     """
-    try:
-        args = setup_cli()
-    except StartupCheckError as e:
-        if e.message:
-            print(e.message, file=sys.stderr)
-        sys.exit(e.exit_code)
-    except BrokenPipeError:
-        devnull = os.open(os.devnull, os.O_WRONLY)
-        os.dup2(devnull, sys.stdout.fileno())
-        sys.exit(0)
+    args = setup_cli()
 
     locale, ignores = locale_checks(config)
 
