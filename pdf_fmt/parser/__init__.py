@@ -5,7 +5,7 @@ import multiprocessing
 
 from pdf_fmt.core import DEFAULT_CONVERT_FORMATS, DEFAULT_CHARS_REGEX
 from pdf_fmt.spell import locale_checks
-from pdf_fmt.startup import setup_cli
+from pdf_fmt.startup import setup_cli, StartupCheckError
 from pdf_fmt.conversion import convert_to_pdf
 from pdf_fmt.processing import extract_text_from_pdf, perform_post_actions
 from pdf_fmt.image import _discard_similar_images, _extract_and_format_images
@@ -73,7 +73,17 @@ def execute_main_pipeline(config: Dict[str, Any]) -> None:
     """
     Executes the main pipeline by coordinating specialized helpers.
     """
-    args = setup_cli()
+    try:
+        args = setup_cli()
+    except StartupCheckError as e:
+        if e.message:
+            print(e.message, file=sys.stderr)
+        sys.exit(e.exit_code)
+    except BrokenPipeError:
+        devnull = os.open(os.devnull, os.O_WRONLY)
+        os.dup2(devnull, sys.stdout.fileno())
+        sys.exit(0)
+
     locale, ignores = locale_checks(config)
 
     conv_cfg = config.get("conversion", {})

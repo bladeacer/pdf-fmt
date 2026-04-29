@@ -49,7 +49,11 @@ def enforce_capitalization(line: str) -> str:
         return line
 
     first_char = stripped_line[0]
-    if first_char.isalpha() and not first_char.isupper():
+    is_capitalise = (first_char.isalpha()
+                     and not first_char.isupper()
+                     and not stripped_line.startswith("http"))
+
+    if is_capitalise:
         leading_ws = line[:len(line) - len(stripped_line)]
         return leading_ws + first_char.upper() + stripped_line[1:]
 

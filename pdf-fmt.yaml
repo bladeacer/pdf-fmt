@@ -88,15 +88,15 @@ formatting:
   min_chars_per_line: 0 
 
   # Lines exceeding this character count will be wrapped/split at the nearest space.
-  # Set to 0 to disable, or a suitable width (default 80).
-  max_chars_per_line: 80
+  # Set to 0 to disable, or a suitable width (default 0).
+  max_chars_per_line: 0
   
   # Defines how to handle page breaks.
   # Options: "___" (default), "--- PAGE SEPARATOR ---" or "none".
   page_separator: "___" 
   
   # If true, ensures the first alphabetic character of every line is capitalized.
-  enforce_line_capitalization: true
+  enforce_line_capitalization: false
   
   # Applies a wrapper around content that matches a regex.
   # REGEX IS NOT CASE SENSITIVE, using Python flavoured regex.
@@ -123,7 +123,7 @@ formatting:
 # ------------------------------------------------------------------------------
 actions:
   # If true, the extracted text will be copied to the system clipboard.
-  copy: true 
+  copy: false 
   
   # If set to a valid string path, the extracted text will be written to that file.
   # write_file: "output.md"

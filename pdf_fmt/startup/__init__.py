@@ -108,22 +108,17 @@ Please run this application as a regular user.
 
 
 def setup_cli() -> argparse.Namespace:
-    """
-    Sets up the argparse CLI and handles flags.
-    """
-
     default_str: str = """pdf-fmt
 
 Cleanly extracts and formats text from a PDF document or convertible file.
 Licensed under GPLv3.
     """
-
     path_str: str = """
-Path to the PDF or convertibel file (e.g. pptx, docx) to process.
-"""
+Path to the file. Use '-' or leave empty to read from stdin (pipe).
+    """
 
     parser = argparse.ArgumentParser(
-        prog='pdf_fmt',
+        prog='pdf-fmt',
         description=default_str,
         formatter_class=argparse.RawTextHelpFormatter
     )
@@ -140,11 +135,23 @@ Path to the PDF or convertibel file (e.g. pptx, docx) to process.
         version=f'%(prog)s {SCRIPT_VERSION}',
         help="Show script's version and exit."
     )
+
     args = parser.parse_args()
 
+    cond: bool = (args.file_path == "-" or
+                  (args.file_path is None and not sys.stdin.isatty())
+                  )
+
+    if cond:
+        args.file_path = "-"
+        return args
+
+    # 3. If path is None and no pipe, show help.
     if args.file_path is None:
         parser.print_help()
         raise StartupCheckError("", 0)
+
+    # 4. Normal file check
     if not os.path.exists(args.file_path):
         message = f"Error: Input file not found at path: '{args.file_path}'"
         raise StartupCheckError(message, 1)

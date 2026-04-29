@@ -130,7 +130,7 @@ def _process_page_text_block(args: PageProcessArgs) -> List[str]:
     from pdf_fmt.formatting import clean_and_lint_text
 
     cfg = args.config.get("formatting", {})
-    max_chars = cfg.get("max_chars_per_line", 80)
+    max_chars = cfg.get("max_chars_per_line", 0)
     enforce_cap = cfg.get("enforce_line_capitalization", False)
 
     filter_content = ln_cont_factory(re.compile(args.allowed_chars_regex))

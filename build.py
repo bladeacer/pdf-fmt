@@ -1,6 +1,7 @@
 # Copyright (c) 2025 bladeacer
 # Licensed under the GPLv3 License. See LICENSE file for details.
 
+import os
 import sys
 from typing import Dict, Any
 
@@ -30,6 +31,10 @@ def main():
     except StartupCheckError as e:
         print(e.message)
         sys.exit(e.exit_code)
+    except BrokenPipeError:
+        devnull = os.open(os.devnull, os.O_WRONLY)
+        os.dup2(devnull, sys.stdout.fileno())
+        sys.exit(0)
     except Exception as e:
         print(f"Unknown error: {e}")
         sys.exit(1)
