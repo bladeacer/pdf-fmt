@@ -67,7 +67,36 @@ extraction, either **dependency** needs to be installed and accessible in your `
 * [**LibreOffice's CLI** \(`soffice` or similar\)](https://www.libreoffice.org/)
 * [**Pandoc**](https://pandoc.org/)
 
-### Known issues
+## Configuration
+
+The configuration options available are documented in the
+[`pdf-fmt.yaml`](./pdf-fmt.yaml) file.
+
+* **`filters`**: Regex rules for character exclusion and pattern-based filtering
+  * excluding footers matching a regex pattern.
+  * includes optional spelling enforcement (UK or US English).
+* **`conversion`**: Lists supported non-PDF formats (see
+[handling non\-PDF formats](#handling-non-pdf-formats)).
+* **`formatting`**: Controls line re-wrapping, indentation conversion
+  * converting single-space indents to Markdown lists
+  * enforcing capitalisation at the start of each line.
+* **`actions`**: Defines post-extraction behaviour
+  * copying to the system clipboard and/or write to an output file.
+
+For extensive customisation, you can consider create your own
+configuration file. If you do, ensure that it is named `pdf-fmt.yaml`.
+
+### Where to place the configuration file
+
+`pdf-fmt` will look for the configuration file under the following locations.
+
+* `$PDF_FMT_CONFIG_PATH` environment variable
+* Default configuration directory
+  * `APPDATA` if you are on Windows
+  * `$XDG_CONFIG_HOME` or `~/.config` if you are on Linux
+* The current working directory of the script
+
+## Known issues
 
 > Inaccurate locale enforcement e.g. localization -> localization even
 > with UK locale enforcement enabled.
@@ -170,8 +199,6 @@ You can also choose to do the following after this step:
 | --- | --- |
 | Windows | x86-64 |
 | Linux | x86-64 |
-| Linux | arm64 |
-| MacOS | x86-64 |
 | MacOS | arm64 |
 
 For other platforms or architectures, we recommend using `uv tool install`,
@@ -311,35 +338,6 @@ Crash reports would be found at `nuitka-crash-report.xml`.
 
 Alternatively, you can call [this script on Linux or macOS](./scripts/compile.sh).
 
-## Configuration
-
-The configuration options available are documented in the
-[`pdf-fmt.yaml`](./pdf-fmt.yaml) file.
-
-* **`filters`**: Regex rules for character exclusion and pattern-based filtering
-  * excluding footers matching a regex pattern.
-  * includes optional spelling enforcement (UK or US English).
-* **`conversion`**: Lists supported non-PDF formats (see
-[handling non\-PDF formats](#handling-non-pdf-formats)).
-* **`formatting`**: Controls line re-wrapping, indentation conversion
-  * converting single-space indents to Markdown lists
-  * enforcing capitalisation at the start of each line.
-* **`actions`**: Defines post-extraction behaviour
-  * copying to the system clipboard and/or write to an output file.
-
-For extensive customisation, you can consider create your own
-configuration file. If you do, ensure that it is named `pdf-fmt.yaml`.
-
-### Where to place the configuration file
-
-`pdf-fmt` will look for the configuration file under the following locations.
-
-* `$PDF_FMT_CONFIG_PATH` environment variable
-* Default configuration directory
-  * `APPDATA` if you are on Windows
-  * `$XDG_CONFIG_HOME` or `~/.config` if you are on Linux
-* The current working directory of the script
-
 ### Development status
 
 Note: the configuration schema in this repository reflects the development branch.
@@ -473,6 +471,9 @@ My friend Potato for testing the binary on Windows.
 
 My friend [Floodlight](https://github.com/Gonzalo-D-Sales) for testing the
 binary on Fedora.
+
+My friend [rori](https://github.com/7368697661) for testing the
+`uv install` method on MacOS.
 
 The code of conduct was adopted from the
 [Contributor Covenant](https://www.contributor-covenant.org/).
