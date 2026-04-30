@@ -371,7 +371,7 @@ compiling from source.
 | **Debian x64 (glibc)** | Wayland | `glibc` | Untested | Contributions are welcome |
 | **Debian x86 (glibc)** | X11 | `glibc` | Untested | Contributions are welcome |
 | **EndeavourOS x64 (Arch-based)** | Wayland | `glibc` | Partial | Script works out of the box. Contributions are welcome for binary/compiling from source. |
-| **EndeavourOS x64 (Arch-based)** | X11 | `glibc` | Yes | Binary/script/compiling from source works. |
+| **EndeavourOS x64 (Arch-based)** | X11 | `glibc` | Yes | `uv install`/Binary/script/compiling from source works. |
 | **Fedora x64 (RPM-based)** | Wayland | `glibc` | Partial | Binary works out of the box. Contributions are welcome for script/compiling from source |
 | **Fedora x64 (RPM-based)** | X11 | `glibc` | Untested | Contributions are welcome |
 | **FreeBSD stable x64** | X11 | `BSD libc` | Untested | Contributions are welcome |
@@ -379,7 +379,7 @@ compiling from source.
 | **OpenBSD x64** | X11 | `BSD libc` | Untested | Contributions are welcome |
 | **Ubuntu LTS x64 (Debian-based)** | Wayland | `glibc` | Untested | Contributions are welcome |
 | **Ubuntu LTS x64 (Debian-based)** | X11 | `glibc` | Untested | Contributions are welcome |
-| **macOS 14 (Sonoma)** | N/A | `libSystem` (BSD `libc`) | Untested | Contributions are welcome |
+| **macOS ** | N/A | `libSystem` (BSD `libc`) | Partial | `uv install works. Contributions are welcome for bianry/script/compiling from source. |
 | **Windows 10 x64** | N/A | `MSVCRT` (via `MSVC`/`MinGW`) | Untested | Contributions are welcome |
 | **Windows 11 x64** | N/A | `MSVCRT` (via `MSVC`/`MinGW`) | Partial | Binary works out of the box. Contributions are welcome for script/compiling from source |
 | **Windows Subsystem for Linux (WSL) 2 x64** | N/A | `glibc`/`musl`| Untested | Contributions are welcome |
