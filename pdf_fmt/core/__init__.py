@@ -1,5 +1,5 @@
 import re
-from typing import List, Dict, Any, Callable
+from typing import Any, Callable, Dict, List
 
 NBSP = '\u00A0'
 DEFAULT_CHARS_REGEX = r"[a-zA-Z0-9\s!\"#$%&'()*+,-./:;<=>?@\[\\\]^_`{|}~]+"
@@ -68,14 +68,13 @@ def replace_successive_spaces(text: str) -> str:
 def preserve_case(original_word: str, translated_word: str) -> str:
     """Applies original casing (UPPER, Title) to the translated word."""
 
-    mixed_upper = any(w.isupper() for w in original_word[1:])
     if not original_word or not translated_word:
         return translated_word
 
     if original_word.isupper():
         return translated_word.upper()
 
-    if original_word[0].isupper() and not mixed_upper:
+    if original_word[0].isupper():
         return translated_word.capitalize()
 
     return translated_word
@@ -150,7 +149,7 @@ def ln_cont_factory(allowed_chars_pattern: re.Pattern) -> Callable[[str], str]:
     (Closure).
     """
     def filter_func(line: str) -> str:
-        return " ".join(allowed_chars_pattern.findall(line))
+        return " ".join(allowed_chars_pattern.findall(line)).strip()
     return filter_func
 
 
@@ -160,7 +159,6 @@ def format_indented_line(line: str) -> str:
     already a list.
     """
     normalized_line = line.replace(NBSP, ' ')
-    normalized_line = line.replace("\n", "\n\n")
     if normalized_line.startswith(' '):
         if not normalized_line.startswith('  '):
             if not re.match(r'^\s*[-*]', normalized_line.lstrip()):
