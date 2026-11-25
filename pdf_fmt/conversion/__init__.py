@@ -1,6 +1,6 @@
 import subprocess
 from pathlib import Path
-from typing import Optional, List, Tuple
+from typing import List, Optional, Tuple
 
 _TOOL_CACHE: Optional[str] = None
 

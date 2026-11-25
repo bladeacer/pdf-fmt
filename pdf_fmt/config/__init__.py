@@ -1,7 +1,8 @@
 import os
-import yaml
 import platform
-from typing import Dict, Any, Optional
+from typing import Any, Dict, Optional
+
+import yaml
 
 CONFIG_FILENAME = "pdf-fmt.yaml"
 
@@ -82,7 +83,7 @@ def load_config() -> Dict[str, Any]:
         return {}
 
     if _CONFIG_CACHE and current_mtime == _CONFIG_MTIME_CACHE:
-        print(f"INFO: Loaded configuration from cache (mtime check successful).")
+        print("INFO: Loaded configuration from cache (mtime check successful).")
         return _CONFIG_CACHE
 
     config = _load_config(file_path)

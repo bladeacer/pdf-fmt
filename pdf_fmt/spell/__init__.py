@@ -3,7 +3,7 @@ Spelling and clipboard helper
 """
 
 import re
-from typing import List, Any, Tuple, Dict
+from typing import Any, Dict, List, Tuple
 
 # Constants
 BREAME_ERROR = "Error: 'breame' library required for spelling. Run: pip install breame."

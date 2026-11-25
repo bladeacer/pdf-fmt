@@ -1,15 +1,14 @@
+import base64
+import glob
+import io
+import multiprocessing
 import os
 import re
-import io
-import glob
 import time
-import base64
-import multiprocessing
-
-from PIL import Image
-from typing import Optional, List, Tuple
+from typing import List, Optional, Tuple
 
 import pdfplumber
+from PIL import Image
 
 COMPLEX_PAGENUM_REGEX = re.compile(r'-\s*p(\d+)-\d+\.')
 simple_page_str: str = r'(?:Image|Im|img_)(\d+)(?:\.\d+)?(?:\.\d+)?\.'

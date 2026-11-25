@@ -1,11 +1,11 @@
-import sys
+import argparse
+import ctypes
+import getpass
+import importlib.metadata
 import os
 import platform
-import getpass
-import ctypes
-import argparse
 import re
-import importlib.metadata
+import sys
 
 
 def get_script_version() -> str:

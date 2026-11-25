@@ -1,14 +1,14 @@
-from typing import Dict, Any, List
-import sys
-import os
 import multiprocessing
+import os
+import sys
+from typing import Any, Dict, List
 
-from pdf_fmt.core import DEFAULT_CONVERT_FORMATS, DEFAULT_CHARS_REGEX
-from pdf_fmt.spell import locale_checks
-from pdf_fmt.startup import setup_cli, StartupCheckError
 from pdf_fmt.conversion import convert_to_pdf
-from pdf_fmt.processing import extract_text_from_pdf, perform_post_actions
+from pdf_fmt.core import DEFAULT_CHARS_REGEX, DEFAULT_CONVERT_FORMATS
 from pdf_fmt.image import _discard_similar_images, _extract_and_format_images
+from pdf_fmt.processing import extract_text_from_pdf, perform_post_actions
+from pdf_fmt.spell import locale_checks
+from pdf_fmt.startup import setup_cli
 
 
 def _get_validated_cores(config: Dict[str, Any]) -> int:

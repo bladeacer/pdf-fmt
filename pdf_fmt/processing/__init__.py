@@ -1,7 +1,8 @@
-from typing import Dict, Any, List, NamedTuple, Tuple, Optional
+import multiprocessing
 import os
 import re
-import multiprocessing
+from typing import Any, Dict, List, NamedTuple, Optional, Tuple
+
 import pdfplumber
 
 from pdf_fmt.formatting import fix_spacing
@@ -128,8 +129,11 @@ def _process_page_text_block(args: PageProcessArgs) -> List[str]:
         return []
 
     from pdf_fmt.core import (
-        split_fmt_line, compile_footer_patterns, ln_cont_factory,
-        is_ft_factory, format_indented_line
+        compile_footer_patterns,
+        format_indented_line,
+        is_ft_factory,
+        ln_cont_factory,
+        split_fmt_line,
     )
     from pdf_fmt.formatting import clean_and_lint_text, replace_unicode_chars
 

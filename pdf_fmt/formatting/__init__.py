@@ -1,7 +1,8 @@
-from typing import List
-from pdf_fmt.spell import enforce_spelling
-from pdf_fmt.core import replace_successive_spaces
 import re
+from typing import List
+
+from pdf_fmt.core import replace_successive_spaces
+from pdf_fmt.spell import enforce_spelling
 
 
 def fix_spacing(text: str) -> str:

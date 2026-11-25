@@ -3,9 +3,9 @@
 
 import os
 import sys
-from typing import Dict, Any
+from typing import Any, Dict
 
-from pdf_fmt.startup import check_not_root, StartupCheckError
+from pdf_fmt.startup import StartupCheckError, check_not_root
 
 
 def main():

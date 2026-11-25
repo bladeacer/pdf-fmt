@@ -25,6 +25,12 @@ pdf-fmt = "pdf_fmt.main:main"
 build = [
   "nuitka"
 ]
+dev = [
+  "ruff"
+]
+
+[tool.ruff.lint]
+select = ["E4", "E7", "E9", "F", "I"]
 
 [tool.uv]
 managed = true
