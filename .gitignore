@@ -8,3 +8,5 @@ nuitka*
 .python-version
 *.egg-info
 *.pdf
+.headroom
+.lccst
