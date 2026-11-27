@@ -1,13 +1,33 @@
-import re
 from typing import List
 
-from pdf_fmt.core import replace_successive_spaces
+from pdf_fmt.core import contains_cjk, replace_successive_spaces
 from pdf_fmt.spell import enforce_spelling
+from pdf_fmt.spell.chinese import convert_chinese
 
 
-def fix_spacing(text: str) -> str:
-    text = re.sub(r'([a-z0-9])([A-Z])', r'\1 \2', text)
-    return text
+def add_cjk_spacing(text: str) -> str:
+    """Inserts spaces at CJK and Latin or digit boundaries."""
+    chars = list(text)
+    result: List[str] = []
+    for index, char in enumerate(chars):
+        if index and not chars[index - 1].isspace():
+            if contains_cjk(char) != contains_cjk(chars[index - 1]):
+                if char.isalnum() or chars[index - 1].isalnum():
+                    result.append(' ')
+        result.append(char)
+    return ''.join(result)
+
+
+def fix_spacing(text: str, cjk_spacing: bool = False) -> str:
+    """Splits lower-to-upper transitions and optionally spaces CJK text."""
+    chars = list(text)
+    result: List[str] = []
+    for char in chars:
+        if result and (result[-1].islower() or result[-1].isdigit()) and char.isupper():
+            result.append(' ')
+        result.append(char)
+    spaced = ''.join(result)
+    return add_cjk_spacing(spaced) if cjk_spacing else spaced
 
 
 def replace_unicode_chars(line: str) -> str:
@@ -84,11 +104,15 @@ def replace_unicode_chars(line: str) -> str:
     return line.translate(table)
 
 
-def clean_and_lint_text(text: str, locale: str, ignore_list: List[str]) -> str:
+def clean_and_lint_text(
+    text: str, locale: str, ignore_list: List[str], apply_variant: bool = True
+) -> str:
     """Applies spelling linting and then cleans up spacing."""
 
-    if locale.lower() in ["en-us", "en-uk"]:
-        text = enforce_spelling(text, locale, ignore_list)
+    if locale.startswith(('en-US', 'en-GB')):
+        text = enforce_spelling(text, locale, ignore_list, apply_variant)
+    if locale.startswith('zh-'):
+        text = convert_chinese(text, locale)
     text = replace_successive_spaces(text)
-    text = fix_spacing(text)
+    text = fix_spacing(text, cjk_spacing=locale.startswith('zh-'))
     return text
