@@ -1,4 +1,6 @@
+import tempfile
 import unittest
+from pathlib import Path
 from typing import Any, Dict
 
 from pdf_fmt.core import DEFAULT_CHARS_REGEX
@@ -7,8 +9,37 @@ from pdf_fmt.processing import (
     PageProcessArgs,
     _process_page_text_block,
     _to_markdown_table,
+    extract_text_from_pdf,
 )
 from pdf_fmt.spell import enforce_spelling, locale_checks
+
+
+def minimal_pdf(text: str) -> bytes:
+    """Builds a one-page PDF with a single Helvetica text line."""
+    stream = f"BT /F1 14 Tf 72 720 Td ({text}) Tj ET".encode("ascii")
+    objects = [
+        b"<< /Type /Catalog /Pages 2 0 R >>",
+        b"<< /Type /Pages /Kids [3 0 R] /Count 1 >>",
+        b"<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] "
+        b"/Resources << /Font << /F1 5 0 R >> >> /Contents 4 0 R >>",
+        b"<< /Length " + str(len(stream)).encode() + b" >>\nstream\n" + stream + b"\nendstream",
+        b"<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>",
+    ]
+    output = bytearray(b"%PDF-1.4\n")
+    offsets = [0]
+    for number, obj in enumerate(objects, 1):
+        offsets.append(len(output))
+        output += f"{number} 0 obj\n".encode() + obj + b"\nendobj\n"
+    xref = len(output)
+    output += f"xref\n0 {len(objects) + 1}\n".encode()
+    output += b"0000000000 65535 f \n"
+    for offset in offsets[1:]:
+        output += f"{offset:010d} 00000 n \n".encode()
+    output += (
+        f"trailer\n<< /Size {len(objects) + 1} /Root 1 0 R >>\n"
+        f"startxref\n{xref}\n%%EOF\n"
+    ).encode()
+    return bytes(output)
 
 FOOTER_REGEXES = [
     r"^\s*\d+\s*$",
@@ -53,29 +84,29 @@ class TestSpelling(unittest.TestCase):
 
     def test_enforce_spelling_uk(self):
         text = "This is a great Color, organization, filter, and connection."
-        result = enforce_spelling(text, "en-UK", ["filter", "connection"])
+        result = enforce_spelling(text, "en-GB", ["filter", "connection"])
         self.assertEqual(result, "This is a great Colour, organisation, filter, and connection.")
 
     def test_enforce_spelling_us(self):
         result = enforce_spelling("This is a great colour and organisation.", "en-US", [])
         self.assertEqual(result, "This is a great color and organization.")
 
-    def test_enforce_spelling_unknown_locale(self):
+    def test_enforce_spelling_off(self):
         text = "This is a great colour and organization."
-        self.assertEqual(enforce_spelling(text, "none", []), text)
+        self.assertEqual(enforce_spelling(text, "off", []), text)
 
     def test_locale_checks(self):
         config = {
             "filters": {
                 "linting": {
                     "spelling": {
-                        "enforce_locale": "en-UK",
-                        "ignore_locale_strings": ["filter"],
+                        "enforce_locale": "en-GB",
+                        "ignore_locale_strings": {"en-GB": ["filter"]},
                     }
                 }
             }
         }
-        self.assertEqual(locale_checks(config), ("en-UK", ["filter"]))
+        self.assertEqual(locale_checks(config), ("en-GB", ["filter"]))
         self.assertEqual(locale_checks({}), ("en-US", []))
 
     def test_clean_and_lint_text(self):
@@ -84,7 +115,7 @@ class TestSpelling(unittest.TestCase):
             "This is a great color!",
         )
         self.assertEqual(
-            clean_and_lint_text("  中文   测试  ", "none", []),
+            clean_and_lint_text("  中文   测试  ", "off", []),
             "中文 测试",
         )
 
@@ -145,6 +176,25 @@ class TestPageProcessing(unittest.TestCase):
             )
         )
         self.assertEqual(result, ["Line 1 100 Line 2 200"])
+
+
+class TestPdfEndToEnd(unittest.TestCase):
+
+    def test_extract_text_from_pdf(self):
+        config: Dict[str, Any] = {
+            "filters": {"allowed_chars_regex": DEFAULT_CHARS_REGEX, "footer_regexes": []},
+            "formatting": {"page_separator": "none", "min_chars_per_line": 0,
+                           "max_chars_per_line": 0},
+            "processing": {"cores": 1},
+        }
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "sample.pdf"
+            path.write_bytes(minimal_pdf("Hello World from a PDF."))
+            content, error = extract_text_from_pdf(
+                str(path), config, DEFAULT_CHARS_REGEX, [], "off", []
+            )
+        self.assertIsNone(error)
+        self.assertIn("Hello World from a PDF.", content)
 
 
 class TestMarkdownTable(unittest.TestCase):

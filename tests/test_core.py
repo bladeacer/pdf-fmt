@@ -5,6 +5,7 @@ from pdf_fmt.core import (
     NBSP,
     apply_regex_enclosure,
     compile_footer_patterns,
+    contains_cjk,
     enforce_capitalization,
     format_indented_line,
     is_ft_factory,
@@ -59,6 +60,22 @@ class TestCoreFunctions(unittest.TestCase):
         self.assertEqual(len(pieces), 3)
         self.assertTrue(pieces[0].startswith("This"))
         self.assertEqual(split_fmt_line("中文测试", 0, False), ["中文测试"])
+
+    def test_cjk_wrapping_keeps_punctuation(self):
+        text = "这是第一段中文文本，接着是第二段文本。"
+        pieces = split_fmt_line(text, 12, False, "zh-CN")
+        self.assertEqual("".join(pieces), text)
+        self.assertTrue(all(len(piece) <= 12 for piece in pieces))
+        self.assertFalse(any(piece.startswith("。") for piece in pieces))
+
+    def test_locale_aware_case(self):
+        self.assertEqual(preserve_case("中文", "中文", "zh-CN"), "中文")
+        self.assertEqual(enforce_capitalization("中文", "zh-CN"), "中文")
+        self.assertEqual(preserve_case("COLOR", "colour", "en-US"), "COLOUR")
+
+    def test_contains_cjk(self):
+        self.assertTrue(contains_cjk("中文 test"))
+        self.assertFalse(contains_cjk("plain ASCII"))
 
     def test_ln_cont_factory(self):
         restricted = ln_cont_factory(re.compile(r"[a-zA-Z\s]+"))
