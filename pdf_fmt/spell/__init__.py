@@ -1,85 +1,66 @@
-"""
-Spelling and clipboard helper
-"""
+"""Locale checks and spelling backends."""
 
 import re
 from typing import Any, Dict, List, Tuple
 
-# Constants
+from pdf_fmt.core import NON_ALPHA_PATTERN, preserve_case
+
+from .english import apply_curated_map
+from .locale import locale_dictionary, normalize_locale
+
 BREAME_ERROR = "Error: 'breame' library required for spelling. Run: pip install breame."
 
 
-def enforce_spelling(text: str, locale: str, ignore_list: List[str]) -> str:
-    """
-    Enforces US or UK spelling using the breame library, preserving case.
-    Handles local imports for breame and core utilities.
-    """
+def enforce_spelling(
+    text: str, locale: str, ignore_list: List[str], apply_variant: bool = True
+) -> str:
+    """Enforces the variant spelling for English locales and preserves case."""
+    resolved = normalize_locale(locale)
+    if not apply_variant or resolved not in ('en-US', 'en-GB'):
+        return text
 
     try:
         from breame.spelling import get_american_spelling, get_british_spelling
-    except ImportError:
-        print(BREAME_ERROR)
+    except ImportError as error:
+        raise RuntimeError(BREAME_ERROR) from error
 
-    try:
-        from pdf_fmt.core import NON_ALPHA_PATTERN, preserve_case
-    except ImportError:
-        # Fallback if pattern isn't available
-        NON_ALPHA_PATTERN = re.compile(r'[^a-zA-Z]')
-
-        def preserve_case(original: str, modified: str) -> str:
-            if original.isupper():
-                return modified.upper()
-            if original[0].isupper():
-                return modified.capitalize()
-            return modified
-
-    ignore_set = {s.lower() for s in ignore_list}
-    locale_upper = locale.upper()
+    ignore_set = {item.lower() for item in ignore_list}
 
     def process_word(word: str) -> str:
         clean_word = NON_ALPHA_PATTERN.sub('', word)
         if not clean_word:
             return word
 
-        word_to_lookup_lower = clean_word.lower()
-        if word_to_lookup_lower in ignore_set:
+        lookup = clean_word.lower()
+        if lookup in ignore_set:
             return word
 
-        try:
-            if locale_upper == "EN-US":
-                base_converted = get_american_spelling(word_to_lookup_lower)
-            elif locale_upper == "EN-UK":
-                base_converted = get_british_spelling(word_to_lookup_lower)
-            else:
-                base_converted = word_to_lookup_lower
-        except (ValueError, Exception):
-            base_converted = word_to_lookup_lower
+        curated = apply_curated_map(lookup, resolved)
+        if curated != lookup:
+            base_converted = curated
+        else:
+            try:
+                if resolved == 'en-US':
+                    base_converted = get_american_spelling(lookup)
+                else:
+                    base_converted = get_british_spelling(lookup)
+            except ValueError:
+                base_converted = lookup
 
-        # If no change was made, return original; otherwise preserve case
-        if base_converted == word_to_lookup_lower:
+        if base_converted == lookup:
             return word
 
-        case_preserved_word = preserve_case(clean_word, base_converted)
-        return word.replace(clean_word, case_preserved_word, 1)
+        converted = preserve_case(clean_word, base_converted, resolved)
+        return word.replace(clean_word, converted, 1)
 
-    return " ".join(process_word(w) for w in text.split())
+    return "".join(
+        token if token.isspace() else process_word(token)
+        for token in re.findall(r'\s+|\S+', text)
+    )
 
 
-
-
-def locale_checks(CONFIG: Dict[str, Any]) -> Tuple[str, List[str]]:
-    filters_config = CONFIG.get("filters", {})
-    linting_config = filters_config.get("linting", {})
-    spelling_config = linting_config.get("spelling", {})
-
-    spelling_locale = spelling_config.get("enforce_locale", "en-US")
-    if not isinstance(spelling_locale, str):
-        print("Warning: 'enforce_locale' in config is not a string. Defaulting to 'en-US'.")
-        spelling_locale = "en-US"
-
-    ignore_list = spelling_config.get("ignore_locale_strings", [])
-    if not isinstance(ignore_list, list):
-        print("Warning: 'ignore_locale_strings' in config is not a list. Defaulting to empty.")
-        ignore_list = []
-
-    return spelling_locale, ignore_list
+def locale_checks(config: Dict[str, Any]) -> Tuple[str, List[str]]:
+    """Returns the validated locale and its per-locale ignore list."""
+    spelling = config.get('filters', {}).get('linting', {}).get('spelling', {})
+    locale = normalize_locale(spelling.get('enforce_locale', 'en-US'))
+    return locale, locale_dictionary(config, locale)
