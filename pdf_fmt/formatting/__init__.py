@@ -10,7 +10,7 @@ def add_cjk_spacing(text: str) -> str:
     chars = list(text)
     result: List[str] = []
     for index, char in enumerate(chars):
-        if index and not chars[index - 1].isspace():
+        if index and not chars[index - 1].isspace() and not char.isspace():
             if contains_cjk(char) != contains_cjk(chars[index - 1]):
                 if char.isalnum() or chars[index - 1].isalnum():
                     result.append(' ')
