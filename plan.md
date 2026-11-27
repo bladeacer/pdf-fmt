@@ -382,6 +382,8 @@ acceptance threshold.
 - [x] 1. Tests-first + conventions: import real modules, fix known drift, add Unicode/CJK
    fixtures and a small PDF end-to-end; add `ruff` to a dev group; update `AGENTS.md`; vendor
    the STE skill and add the em dash gate; use `lccst` MCP/skill where available.
+   - [x] 1a. Expand end-to-end coverage over the CLI, pipeline, conversion, images, locales
+      and config with real multi-page PDFs that carry a table, an image and CJK text.
 - [x] 2. Unicode foundation: replace ASCII filters/patterns, add CJK-aware wrapping and
    spacing, make capitalisation/case-preservation locale-aware; add Babel formatting and
    typography hooks.
