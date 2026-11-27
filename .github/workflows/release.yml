@@ -99,6 +99,30 @@ jobs:
             ${{ env.EXECUTABLE_NAME }}.sha256
           retention-days: 1
 
+  native-smoke:
+    name: Optional native backends (${{ matrix.os }})
+    strategy:
+      matrix:
+        include:
+          - os: windows-latest
+            arch: x64
+          - os: ubuntu-latest
+            arch: x64
+          - os: macos-latest
+            arch: arm64
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v6
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          architecture: ${{ matrix.arch }}
+      - name: Install optional wheels
+        run: python -m pip install 'harper-py==0.2.0' 'opencc==1.4.2'
+      - name: Import native backends
+        run: python -c "import harper, opencc; print('native backends OK')"
+
   release:
     name: Create Draft Release
     needs: build
