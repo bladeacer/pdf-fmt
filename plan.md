@@ -413,3 +413,101 @@ acceptance threshold.
   and `../adacovex` README / `docs/usage/sbom.md` / justfile.
 - All external facts above are as of 2026-11-25 and should be re-checked before pinning
   versions.
+
+## 13. Post 1.0 backlog (through v1.5.0)
+
+This list came from an older plan written by a previous model. That text was low quality,
+and the changes probably did not land. Check every item against the code before work starts.
+Work through the list up to v1.5.0. Use minor semver bumps sparingly.
+
+### 13.1 Extraction and formatting
+
+- [ ] Improve table output. It is still wonky or broken.
+- [ ] Continue the Unicode to non-Unicode mappings.
+- [ ] Fix `max_chars_per_line`. Move extra characters to the next line instead of discarding
+  them.
+- [ ] Let users define `us_to_uk_mapping` and `uk_to_us_mapping`. These override breame when
+  the definitions conflict.
+- [ ] Test compiler flags and compile locally. Check whether any modules must be included
+  explicitly.
+- [ ] Enforce at least one line separator after Markdown blockquotes, where each line starts
+  with `>`. Let users set the number of line breaks before each separator.
+- [ ] Update the config schema with defensive checks. Only YAML syntax is checked today.
+- [ ] Extract and embed. Test that it works as expected and add defensive checks.
+- [ ] Confirm the definitions and behaviour of these config values:
+  - [ ] `cores`: report time spent in multiprocessing and add a `quiet: true` option.
+  - [ ] `ignore_locale_strings`
+  - [ ] `enforce_locale`
+- [ ] Allow a Markdown heading (`# `, `##`, and so on) after each separator and on the first
+  line of the document.
+- [ ] Fix unknown terms getting lowercased.
+- [ ] Skip image extraction when the path is invalid or the schema value is false. Add a test.
+- [ ] Group content under the same heading. Do not add a separator when the first line of two
+  pages is the same. Keep the existing separator and line-break behaviour for other chunks.
+- [ ] Add a file metadata option for ctime, filename and file size. Keep the options simple.
+- [ ] Always join lines that hold links or HTML tags.
+- [ ] Stop a line separator from appearing after the last line.
+- [ ] Make `min_chars_per_line` and `max_chars_per_line` smarter. Avoid splitting words.
+
+### 13.2 Documentation and conversions
+
+- [ ] Document default options outside the sample YAML file. Give each value a no-op value.
+  Put the material in a separate documentation directory and try another documentation
+  framework.
+- [ ] Optionally keep the temporary converted PDF after conversion.
+- [ ] Add maximum and minimum characters per slide, paragraph and line. Check minimum and
+  maximum lines per slide.
+- [ ] Add a configurable prefix for each line, such as two or four spaces for visual indent.
+- [ ] Replace a space before a single `s` with an apostrophe, for example `enterprise s` to
+  `enterprise's`. Make this customisable and abstract it to other symbols such as `:`.
+- [ ] Enforce at least a given spacing on both sides of target regex strings, for example
+  `A->B` to `A -> B`. Enable this by default for brackets.
+
+### 13.3 Text quality, line breaks and linting
+
+*Improving the quality of extracted text by controlling line breaks, paragraph structure,
+and enforcing general linting rules.*
+
+- [ ] Smart Line Joining: restore smart capitalization during line joining and make the
+  default line and paragraph handling less opinionated.
+- [ ] List Joining: join ordered and unordered list items to avoid excessive line breaks.
+- [ ] Global Replace: add a config option for a regex that replaces all occurrences of one
+  string with another. Run it before the rest of the text processing.
+- [ ] Prefix/Suffix Control: add a regex option that prefixes or suffixes a line when it
+  starts with a given pattern.
+- [ ] Title Case Enforcement: add a linting rule that changes all caps in headings to title
+  case.
+- [ ] General Linting: add more linting rules for text quality.
+- [ ] Remove the hyphen from target word prefixes and let users configure this.
+
+### 13.4 Scaling and document boundaries
+
+*Scaling the tool for multiple documents, with fine-grained control over document
+boundaries and image and footer handling.*
+
+- [ ] Batch Processing: process multiple documents with dynamic, configurable output file
+  names.
+- [ ] Interactive Config: add a CLI flag or config option for interactive review. Do not
+  overwrite existing values without approval.
+- [ ] Output Path Control: ask for the output path, allow a default directory, and add tab
+  completion for paths.
+- [ ] Smart Footers: detect footers with structural heuristics, not only user regexes.
+- [ ] Image Handling: replace unrecognised images with placeholders or exclude images that
+  dominate the page in text-only mode.
+- [ ] Line Break Control: set the line break count before and after page separators.
+- [ ] List Preservation: keep ordered list numbering across page breaks until a double line
+  break appears.
+- [ ] Enclosure Handling: treat `[a][b]` as one block instead of two independent matches.
+- [ ] Omit Short Lines: drop lines or sections below a given character count.
+- [ ] Remove by Start Regex: remove a whole paragraph when it starts with a given regex, for
+  example citation or summary boilerplate.
+
+### 13.5 Validation and code handling
+
+- [ ] Configuration Validation: validate the structure of user config files.
+- [ ] Citation Enforcement: enforce citation formats such as APA and MLA. Integrate with
+  Zotero when its binary is present.
+- [ ] Code Block Detection: detect Python code blocks with AST or text parsing and enclose
+  them with correct formatting and auto-indentation.
+- [ ] Code Protection: enclose a line in a code block when it starts with `#` to avoid
+  Markdown parsing problems.

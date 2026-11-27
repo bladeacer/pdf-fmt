@@ -98,10 +98,11 @@ split work that touches more than one component. Explain why a change was needed
 the diff shows.
 
 After finishing a change, suggest the commit message in a fenced block and do not run the
-commit unless asked. State why the scope fits, name the version in `plan.md` the change
-belongs to, and say whether the change needs a MAJOR version. For one atomic change, suggest
-one message. For several components or intents, list commits in dependency order and give
-one shell one-liner that stages and commits each in turn with its own `git add` paths,
+commit unless asked. State why the scope fits, state the target version once in the response
+prose, and say whether the change needs a MAJOR version. Do not repeat a version line in
+each commit message. For one atomic change, suggest one message. For several components or
+intents, list commits in dependency order and give one shell one-liner that stages and
+commits each in turn with its own `git add` paths,
 chaining the `git commit -m "$(cat <<'EOF' ... EOF)"` steps with `&&` so a failure stops the
 chain. Never run that one-liner unless asked.
 
