@@ -1,0 +1,284 @@
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.5",
+  "version": 1,
+  "metadata": {
+    "timestamp": "2026-11-27T21:35:01",
+    "tools": [
+      {"vendor": "bladeacer", "name": "adacovex", "version": "1.75.0"}
+    ],
+    "component": {
+      "type": "application",
+      "bom-ref": "pkg:alire/pdf-fmt",
+      "name": "pdf-fmt",
+      "language": "Python; Shell; PowerShell",
+      "purl": "pkg:alire/pdf-fmt",
+      "properties": [{"name": "adacovex:proof_level", "value": "Stone"}, {"name": "adacovex:standard", "value": "DO-178C, ISO 26262, IEC 62304"}, {"name": "adacovex:dal_target", "value": "DAL-C"}, {"name": "adacovex:level", "value": "DAL-C / ASIL B / Class A"}]
+      }
+  },
+  "components": [
+    {
+      "type": "library",
+      "bom-ref": "pkg:pypi/babel",
+      "name": "babel",
+      "language": "Python",
+      "purl": "pkg:pypi/babel",
+      "description": "Python package referenced by the project (requirements.txt)",
+      "properties": [{"name": "adacovex:proof_level", "value": "Not proved"}, {"name": "adacovex:dep_scope", "value": "dev"}]
+      },
+    {
+      "type": "library",
+      "bom-ref": "pkg:pypi/breame",
+      "name": "breame",
+      "language": "Python",
+      "purl": "pkg:pypi/breame",
+      "description": "Python package referenced by the project (requirements.txt)",
+      "properties": [{"name": "adacovex:proof_level", "value": "Not proved"}, {"name": "adacovex:dep_scope", "value": "dev"}]
+      },
+    {
+      "type": "library",
+      "bom-ref": "pkg:pypi/cffi",
+      "name": "cffi",
+      "language": "Python",
+      "purl": "pkg:pypi/cffi",
+      "description": "Python package referenced by the project (requirements.txt)",
+      "properties": [{"name": "adacovex:proof_level", "value": "Not proved"}, {"name": "adacovex:dep_scope", "value": "dev"}]
+      },
+    {
+      "type": "library",
+      "bom-ref": "pkg:pypi/charset-normalizer",
+      "name": "charset-normalizer",
+      "language": "Python",
+      "purl": "pkg:pypi/charset-normalizer",
+      "description": "Python package referenced by the project (requirements.txt)",
+      "properties": [{"name": "adacovex:proof_level", "value": "Not proved"}, {"name": "adacovex:dep_scope", "value": "dev"}]
+      },
+    {
+      "type": "library",
+      "bom-ref": "pkg:pypi/cryptography",
+      "name": "cryptography",
+      "language": "Python",
+      "purl": "pkg:pypi/cryptography",
+      "description": "Python package referenced by the project (requirements.txt)",
+      "properties": [{"name": "adacovex:proof_level", "value": "Not proved"}, {"name": "adacovex:dep_scope", "value": "dev"}]
+      },
+    {
+      "type": "library",
+      "bom-ref": "pkg:pypi/langcodes",
+      "name": "langcodes",
+      "language": "Python",
+      "purl": "pkg:pypi/langcodes",
+      "description": "Python package referenced by the project (requirements.txt)",
+      "properties": [{"name": "adacovex:proof_level", "value": "Not proved"}, {"name": "adacovex:dep_scope", "value": "dev"}]
+      },
+    {
+      "type": "library",
+      "bom-ref": "pkg:pypi/pdfminer-six",
+      "name": "pdfminer-six",
+      "language": "Python",
+      "purl": "pkg:pypi/pdfminer-six",
+      "description": "Python package referenced by the project (requirements.txt)",
+      "properties": [{"name": "adacovex:proof_level", "value": "Not proved"}, {"name": "adacovex:dep_scope", "value": "dev"}]
+      },
+    {
+      "type": "library",
+      "bom-ref": "pkg:pypi/pdfplumber",
+      "name": "pdfplumber",
+      "language": "Python",
+      "purl": "pkg:pypi/pdfplumber",
+      "description": "Python package referenced by the project (requirements.txt)",
+      "properties": [{"name": "adacovex:proof_level", "value": "Not proved"}, {"name": "adacovex:dep_scope", "value": "dev"}]
+      },
+    {
+      "type": "library",
+      "bom-ref": "pkg:pypi/pillow",
+      "name": "pillow",
+      "language": "Python",
+      "purl": "pkg:pypi/pillow",
+      "description": "Python package referenced by the project (requirements.txt)",
+      "properties": [{"name": "adacovex:proof_level", "value": "Not proved"}, {"name": "adacovex:dep_scope", "value": "dev"}]
+      },
+    {
+      "type": "library",
+      "bom-ref": "pkg:pypi/pycparser",
+      "name": "pycparser",
+      "language": "Python",
+      "purl": "pkg:pypi/pycparser",
+      "description": "Python package referenced by the project (requirements.txt)",
+      "properties": [{"name": "adacovex:proof_level", "value": "Not proved"}, {"name": "adacovex:dep_scope", "value": "dev"}]
+      },
+    {
+      "type": "library",
+      "bom-ref": "pkg:pypi/pypdfium2",
+      "name": "pypdfium2",
+      "language": "Python",
+      "purl": "pkg:pypi/pypdfium2",
+      "description": "Python package referenced by the project (requirements.txt)",
+      "properties": [{"name": "adacovex:proof_level", "value": "Not proved"}, {"name": "adacovex:dep_scope", "value": "dev"}]
+      },
+    {
+      "type": "library",
+      "bom-ref": "pkg:pypi/pyperclip",
+      "name": "pyperclip",
+      "language": "Python",
+      "purl": "pkg:pypi/pyperclip",
+      "description": "Python package referenced by the project (requirements.txt)",
+      "properties": [{"name": "adacovex:proof_level", "value": "Not proved"}, {"name": "adacovex:dep_scope", "value": "dev"}]
+      },
+    {
+      "type": "library",
+      "bom-ref": "pkg:pypi/pyyaml",
+      "name": "pyyaml",
+      "language": "Python",
+      "purl": "pkg:pypi/pyyaml",
+      "description": "Python package referenced by the project (requirements.txt)",
+      "properties": [{"name": "adacovex:proof_level", "value": "Not proved"}, {"name": "adacovex:dep_scope", "value": "dev"}]
+      },
+    {
+      "type": "library",
+      "bom-ref": "pkg:pypi/ruff",
+      "name": "ruff",
+      "language": "Python",
+      "purl": "pkg:pypi/ruff",
+      "description": "Python package referenced by the project (requirements.txt)",
+      "properties": [{"name": "adacovex:proof_level", "value": "Not proved"}, {"name": "adacovex:dep_scope", "value": "dev"}]
+      },
+    {
+      "type": "library",
+      "bom-ref": "pkg:pypi/typing-extensions",
+      "name": "typing-extensions",
+      "language": "Python",
+      "purl": "pkg:pypi/typing-extensions",
+      "description": "Python package referenced by the project (requirements.txt)",
+      "properties": [{"name": "adacovex:proof_level", "value": "Not proved"}, {"name": "adacovex:dep_scope", "value": "dev"}]
+      },
+    {
+      "type": "library",
+      "bom-ref": "pkg:pypi/zhconv",
+      "name": "zhconv",
+      "language": "Python",
+      "purl": "pkg:pypi/zhconv",
+      "description": "Python package referenced by the project (requirements.txt)",
+      "properties": [{"name": "adacovex:proof_level", "value": "Not proved"}, {"name": "adacovex:dep_scope", "value": "dev"}]
+      },
+    {
+      "type": "library",
+      "bom-ref": "pkg:github/actions/checkout@v6",
+      "name": "actions/checkout",
+      "version": "v6",
+      "language": "YAML",
+      "purl": "pkg:github/actions/checkout@v6",
+      "description": "GitHub Actions workflow action",
+      "properties": [{"name": "adacovex:proof_level", "value": "Not proved"}, {"name": "adacovex:dep_scope", "value": "dev"}]
+      },
+    {
+      "type": "library",
+      "bom-ref": "pkg:github/actions/setup-python@v5",
+      "name": "actions/setup-python",
+      "version": "v5",
+      "language": "YAML",
+      "purl": "pkg:github/actions/setup-python@v5",
+      "description": "GitHub Actions workflow action",
+      "properties": [{"name": "adacovex:proof_level", "value": "Not proved"}, {"name": "adacovex:dep_scope", "value": "dev"}]
+      },
+    {
+      "type": "library",
+      "bom-ref": "pkg:github/Nuitka/Nuitka-Action@main",
+      "name": "Nuitka/Nuitka-Action",
+      "version": "main",
+      "language": "YAML",
+      "purl": "pkg:github/Nuitka/Nuitka-Action@main",
+      "description": "GitHub Actions workflow action",
+      "properties": [{"name": "adacovex:proof_level", "value": "Not proved"}, {"name": "adacovex:dep_scope", "value": "dev"}]
+      },
+    {
+      "type": "library",
+      "bom-ref": "pkg:github/actions/upload-artifact@v4",
+      "name": "actions/upload-artifact",
+      "version": "v4",
+      "language": "YAML",
+      "purl": "pkg:github/actions/upload-artifact@v4",
+      "description": "GitHub Actions workflow action",
+      "properties": [{"name": "adacovex:proof_level", "value": "Not proved"}, {"name": "adacovex:dep_scope", "value": "dev"}]
+      },
+    {
+      "type": "library",
+      "bom-ref": "pkg:github/actions/download-artifact@v4",
+      "name": "actions/download-artifact",
+      "version": "v4",
+      "language": "YAML",
+      "purl": "pkg:github/actions/download-artifact@v4",
+      "description": "GitHub Actions workflow action",
+      "properties": [{"name": "adacovex:proof_level", "value": "Not proved"}, {"name": "adacovex:dep_scope", "value": "dev"}]
+      },
+    {
+      "type": "library",
+      "bom-ref": "pkg:generic/make",
+      "name": "make",
+      "version": "4.4.1",
+      "purl": "pkg:generic/make",
+      "description": "System tool referenced by the project (dev dependency)",
+      "properties": [{"name": "adacovex:proof_level", "value": "Not proved"}, {"name": "adacovex:dep_scope", "value": "system"}]
+      },
+    {
+      "type": "library",
+      "bom-ref": "pkg:generic/python",
+      "name": "python",
+      "version": "3.14.10",
+      "purl": "pkg:generic/python",
+      "description": "System tool referenced by the project (dev dependency)",
+      "properties": [{"name": "adacovex:proof_level", "value": "Not proved"}, {"name": "adacovex:dep_scope", "value": "system"}]
+      },
+    {
+      "type": "library",
+      "bom-ref": "pkg:generic/pip",
+      "name": "pip",
+      "version": "26.2.2",
+      "purl": "pkg:generic/pip",
+      "description": "System tool referenced by the project (dev dependency)",
+      "properties": [{"name": "adacovex:proof_level", "value": "Not proved"}, {"name": "adacovex:dep_scope", "value": "system"}]
+      },
+    {
+      "type": "library",
+      "bom-ref": "pkg:generic/git",
+      "name": "git",
+      "version": "2.56.1",
+      "purl": "pkg:generic/git",
+      "description": "System tool referenced by the project (dev dependency)",
+      "properties": [{"name": "adacovex:proof_level", "value": "Not proved"}, {"name": "adacovex:dep_scope", "value": "system"}]
+      },
+    {
+      "type": "library",
+      "bom-ref": "pkg:generic/bash",
+      "name": "bash",
+      "version": "5.3.20(1)-release",
+      "purl": "pkg:generic/bash",
+      "description": "System tool referenced by the project (dev dependency)",
+      "properties": [{"name": "adacovex:proof_level", "value": "Not proved"}, {"name": "adacovex:dep_scope", "value": "system"}]
+      },
+    {
+      "type": "library",
+      "bom-ref": "pkg:generic/gh",
+      "name": "gh",
+      "version": "2.106.0",
+      "purl": "pkg:generic/gh",
+      "description": "System tool referenced by the project (dev dependency)",
+      "properties": [{"name": "adacovex:proof_level", "value": "Not proved"}, {"name": "adacovex:dep_scope", "value": "system"}]
+      },
+    {
+      "type": "library",
+      "bom-ref": "pkg:generic/adacovex",
+      "name": "adacovex",
+      "version": "1.75.0",
+      "purl": "pkg:generic/adacovex",
+      "description": "Coverage tool referenced by the project (dev dependency)",
+      "properties": [{"name": "adacovex:proof_level", "value": "Not proved"}, {"name": "adacovex:dep_scope", "value": "dev"}]
+      }
+  ],
+  "dependencies": [
+    {
+      "ref": "pkg:alire/pdf-fmt",
+      "dependsOn": ["pkg:pypi/babel", "pkg:pypi/breame", "pkg:pypi/cffi", "pkg:pypi/charset-normalizer", "pkg:pypi/cryptography", "pkg:pypi/langcodes", "pkg:pypi/pdfminer-six", "pkg:pypi/pdfplumber", "pkg:pypi/pillow", "pkg:pypi/pycparser", "pkg:pypi/pypdfium2", "pkg:pypi/pyperclip", "pkg:pypi/pyyaml", "pkg:pypi/ruff", "pkg:pypi/typing-extensions", "pkg:pypi/zhconv", "pkg:github/actions/checkout@v6", "pkg:github/actions/setup-python@v5", "pkg:github/Nuitka/Nuitka-Action@main", "pkg:github/actions/upload-artifact@v4", "pkg:github/actions/download-artifact@v4", "pkg:generic/make", "pkg:generic/python", "pkg:generic/pip", "pkg:generic/git", "pkg:generic/bash", "pkg:generic/gh", "pkg:generic/adacovex"]
+    }
+  ]
+}

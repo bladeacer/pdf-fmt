@@ -6,6 +6,15 @@ resolution-markers = [
 ]
 
 [[package]]
+name = "babel"
+version = "2.19.0"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/32/44/744169ce3677a541439bc9506ef08bd85674e9d6e3895ebe5a87ff65fb7a/babel-2.19.0.tar.gz", hash = "sha256:fddd2cbbbac7c299af3c2880be23609c331bd94f0912baca6cb0abfe054dfc27", size = 10695455 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/71/3b/ddf4b07be846bfa361683729b5948c9c61a87fbdf09e69540d8e586bb7c5/babel-2.19.0-py3-none-any.whl", hash = "sha256:6d49734aed1d595b2c065d012174df8c83964692f26fc461702281634dd7555b", size = 10983582 },
+]
+
+[[package]]
 name = "breame"
 version = "0.1.2"
 source = { registry = "https://pypi.org/simple" }
@@ -191,6 +200,15 @@ wheels = [
 ]
 
 [[package]]
+name = "langcodes"
+version = "3.5.1"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/a9/75/f9edc5d72945019312f359e69ded9f82392a81d49c5051ed3209b100c0d2/langcodes-3.5.1.tar.gz", hash = "sha256:40bff315e01b01d11c2ae3928dd4f5cbd74dd38f9bd912c12b9a3606c143f731", size = 191084 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/dd/c1/d10b371bcba7abce05e2b33910e39c33cfa496a53f13640b7b8e10bb4d2b/langcodes-3.5.1-py3-none-any.whl", hash = "sha256:b6a9c25c603804e2d169165091d0cdb23934610524a21d226e4f463e8e958a72", size = 183050 },
+]
+
+[[package]]
 name = "nuitka"
 version = "4.0.8"
 source = { registry = "https://pypi.org/simple" }
@@ -198,14 +216,17 @@ sdist = { url = "https://files.pythonhosted.org/packages/1c/48/e54130d57b89fc015
 
 [[package]]
 name = "pdf-fmt"
-version = "0.8.3"
+version = "1.0.0"
 source = { editable = "." }
 dependencies = [
+    { name = "babel" },
     { name = "breame" },
+    { name = "langcodes" },
     { name = "pdfplumber" },
     { name = "pillow" },
     { name = "pyperclip" },
     { name = "pyyaml" },
+    { name = "zhconv" },
 ]
 
 [package.dev-dependencies]
@@ -218,11 +239,14 @@ dev = [
 
 [package.metadata]
 requires-dist = [
+    { name = "babel", specifier = ">=2.19.0" },
     { name = "breame" },
+    { name = "langcodes", specifier = ">=3.5.1" },
     { name = "pdfplumber" },
     { name = "pillow" },
     { name = "pyperclip" },
     { name = "pyyaml" },
+    { name = "zhconv", specifier = ">=1.4.3" },
 ]
 
 [package.metadata.requires-dev]
@@ -455,3 +479,9 @@ sdist = { url = "https://files.pythonhosted.org/packages/72/94/1a15dd82efb362ac8
 wheels = [
     { url = "https://files.pythonhosted.org/packages/18/67/36e9267722cc04a6b9f15c7f3441c2363321a3ea07da7ae0c0707beb2a9c/typing_extensions-4.15.0-py3-none-any.whl", hash = "sha256:f0fa19c6845758ab08074a0cfa8b7aecb71c999ca73d62883bc25cc018c4e548", size = 44614 },
 ]
+
+[[package]]
+name = "zhconv"
+version = "1.4.3"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/25/47/c8ae2d5d4025e253211ff3d8c163f457db1da94976cb582337a5ab76cb87/zhconv-1.4.3.tar.gz", hash = "sha256:ad42d9057ca0605f8e41d62b67ca797f879f58193ee6840562c51459b2698c45", size = 211571 }

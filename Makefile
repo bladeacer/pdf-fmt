@@ -6,7 +6,7 @@ BUILD_DIR = build
 EXE = $(BUILD_DIR)/pdf-fmt
 LOG_FILE = nuitka-build.log
 
-.PHONY: help setup test run compile run-compiled act clean requirements release
+.PHONY: help setup test run compile run-compiled act clean requirements release docs-check complexity sbom
 
 # Default target: show help
 help:
@@ -17,6 +17,9 @@ help:
 	@echo "  install       Install project locally using uv"
 	@echo "  sync          setup + install"
 	@echo "  test          Run unit tests using .venv"
+	@echo "  docs-check    Reject em dashes in hand-written Markdown docs"
+	@echo "  complexity    Run the adacovex 10% LOC gate on source files"
+	@echo "  sbom          Generate sbom.json with the sibling adacovex binary"
 	@echo "  run           Run pdf-fmt.py using .venv. Pass ARGS with make run ARGS='--version'"
 	@echo "  compile       Build standalone binary using .venv-build"
 	@echo "  run-compiled  Execute the compiled binary"
@@ -35,6 +38,18 @@ requirements:
 # Run Tests (Does NOT force a requirements update)
 test:
 	$(UV) run python -m unittest discover -sv tests
+
+docs-check:
+	$(UV) run python tools/check_docs.py
+
+complexity:
+	../adacovex/bin/adacovex complexity --target=. --excludes=md,rst \
+		--skip-path=.venv --skip-path=.venv-build --skip-path=.headroom \
+		--skip-path=.lccst --skip-path=.ruff_cache --skip-path=build \
+		--skip-path=sbom.json
+
+sbom:
+	../adacovex/bin/adacovex sbom --target=. --format=cyclonedx-json --out=sbom.json
 
 install:
 	uv tool install --editable .
