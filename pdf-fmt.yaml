@@ -37,16 +37,30 @@ filters:
   # Configuration for enforcing spelling rules.
   linting:
 
-    # Defines the language standard to enforce. Options: "en-US", "en-UK", or "none".
+    # BCP 47 tags: "en-US", "en-GB", "zh-CN", "zh-HK", "zh-TW" or "off".
+    # Legacy values "en-UK" and "none" are rejected.
     spelling:
-      enforce_locale: "en-UK" 
+      enforce_locale: "en-GB"
 
-      # You can specify a set of locale strings to ignore. By default, the localisation library
-      # used has some inaccuracies regarding localising some words.
+      # Per-locale user dictionaries. They also override curated mappings.
       ignore_locale_strings:
+        en-GB:
           - "filter"
           - "connection"
           - "categorical"
+        en-US: []
+        zh-CN: []
+        zh-HK: []
+        zh-TW: []
+
+      # Detect Han script per page block before applying locale rules.
+      auto_detect_script: false
+
+    # Suggestion categories that are applied without user review.
+    auto_apply:
+      variant: true
+      grammar: false
+      style: false
 
 # ------------------------------------------------------------------------------
 # 2. CONVERSION
@@ -98,6 +112,9 @@ formatting:
   # If true, ensures the first alphabetic character of every line is capitalized.
   enforce_line_capitalization: false
   
+  # Options passed to pdfplumber table detection. An empty map uses its defaults.
+  extract_table: {}
+
   # Applies a wrapper around content that matches a regex.
   # REGEX IS NOT CASE SENSITIVE, using Python flavoured regex.
   #
