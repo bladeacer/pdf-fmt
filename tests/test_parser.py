@@ -12,34 +12,7 @@ from pdf_fmt.processing import (
     extract_text_from_pdf,
 )
 from pdf_fmt.spell import enforce_spelling, locale_checks
-
-
-def minimal_pdf(text: str) -> bytes:
-    """Builds a one-page PDF with a single Helvetica text line."""
-    stream = f"BT /F1 14 Tf 72 720 Td ({text}) Tj ET".encode("ascii")
-    objects = [
-        b"<< /Type /Catalog /Pages 2 0 R >>",
-        b"<< /Type /Pages /Kids [3 0 R] /Count 1 >>",
-        b"<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] "
-        b"/Resources << /Font << /F1 5 0 R >> >> /Contents 4 0 R >>",
-        b"<< /Length " + str(len(stream)).encode() + b" >>\nstream\n" + stream + b"\nendstream",
-        b"<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>",
-    ]
-    output = bytearray(b"%PDF-1.4\n")
-    offsets = [0]
-    for number, obj in enumerate(objects, 1):
-        offsets.append(len(output))
-        output += f"{number} 0 obj\n".encode() + obj + b"\nendobj\n"
-    xref = len(output)
-    output += f"xref\n0 {len(objects) + 1}\n".encode()
-    output += b"0000000000 65535 f \n"
-    for offset in offsets[1:]:
-        output += f"{offset:010d} 00000 n \n".encode()
-    output += (
-        f"trailer\n<< /Size {len(objects) + 1} /Root 1 0 R >>\n"
-        f"startxref\n{xref}\n%%EOF\n"
-    ).encode()
-    return bytes(output)
+from tests.fixtures.pdf_builder import build_pdf
 
 FOOTER_REGEXES = [
     r"^\s*\d+\s*$",
@@ -189,7 +162,7 @@ class TestPdfEndToEnd(unittest.TestCase):
         }
         with tempfile.TemporaryDirectory() as tmp:
             path = Path(tmp) / "sample.pdf"
-            path.write_bytes(minimal_pdf("Hello World from a PDF."))
+            path.write_bytes(build_pdf([["Hello World from a PDF."]]))
             content, error = extract_text_from_pdf(
                 str(path), config, DEFAULT_CHARS_REGEX, [], "off", []
             )
