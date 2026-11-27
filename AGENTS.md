@@ -17,17 +17,22 @@ reason is not obvious from the code; never restate the code or mark it with `FIX
 | `pdf_fmt/config/`, `pdf_fmt/startup/` | Config loading, CLI and startup checks |
 | `build.py`, `pdf-fmt.py`, `pdf_fmt/main.py` | Entry points; to be collapsed into one |
 | `tests/` | `unittest` suite importing real modules |
+| `tools/` | Documentation and gate checks |
+| `skills/` | Vendored agent skills |
 | `plan.md` | Work plan and version target |
 
 Keep modules small: the adacovex gate fails any Python file above 10% of codebase LOC.
 
 ## Commands
 
-- `make test` — `python -m unittest discover -sv tests`
-- `uv run ruff check` — lint gate; keep the selected rules green
-- `make run ARGS='...'` — run the script entry point
-- `make compile`, `make run-compiled` — Nuitka build and binary check
-- `make setup`, `make sync`, `make requirements` — environment and pinned export
+- `make test` runs `python -m unittest discover -sv tests`
+- `uv run ruff check` is the lint gate; keep the selected rules green
+- `make docs-check` rejects em dashes in hand-written Markdown docs
+- `make complexity` runs the adacovex 10% LOC gate on source files
+- `make sbom` generates `sbom.json` with the sibling adacovex binary
+- `make run ARGS='...'` runs the script entry point
+- `make compile`, `make run-compiled` build and check the Nuitka binary
+- `make setup`, `make sync`, `make requirements` manage the environment and pinned export
 - Complexity and SBOM gates use `../adacovex/bin/adacovex` directly. No `alire.toml` or `alr`
   in this repo. Only `sbom.json` is kept; the 10% LOC gate stays.
 - When the `lccst` MCP server or skill is available, use `lccst init`, `tooling`,
@@ -41,6 +46,16 @@ Keep modules small: the adacovex gate fails any Python file above 10% of codebas
 - Add CJK/Unicode fixtures for text changes; ASCII-only filters are a known defect.
 - Locales are BCP 47 tags: `en-US`, `en-GB`, `zh-CN`, `zh-HK`, `zh-TW`. `off` disables
   locale handling. Legacy `en-UK` and `none` are a hard break with a major release.
+
+## Technical writing
+
+Technical prose uses British spelling and the rules in the vendored
+[SimpleEnglish skill](skills/simple-english/SKILL.md). The copy is MIT licensed and credited
+in `CREDITS.md`. Load it from that path when you write or check documentation, docstrings or
+commit messages. Keep the vendored text unchanged.
+
+The em dash is banned. Use a comma, a colon or a new sentence instead. `make docs-check`
+enforces this rule for hand-written Markdown.
 
 ## Commit messages
 
@@ -73,7 +88,8 @@ issue at the end of the body with `Closes #123` when one exists.
 | `cli` | Entry points and `pdf_fmt/startup/` |
 | `tests` | `tests/` |
 | `tools` | Lint/gate tooling and scripts |
-| `docs` | `README.md`, `AGENTS.md`, `plan.md`, changelogs |
+| `docs` | `README.md`, `AGENTS.md`, `CREDITS.md`, `plan.md`, changelogs |
+| `skills` | Vendored agent skills under `skills/` |
 | `build` | `Makefile`, `pyproject.toml`, `build.py`, dependencies |
 | `ci` | `.github/workflows/` |
 
@@ -88,3 +104,7 @@ one message. For several components or intents, list commits in dependency order
 one shell one-liner that stages and commits each in turn with its own `git add` paths,
 chaining the `git commit -m "$(cat <<'EOF' ... EOF)"` steps with `&&` so a failure stops the
 chain. Never run that one-liner unless asked.
+
+At the end of any response that suggests a commit chain, run `git status --short` to find
+unstaged and untracked files. Stage them into the suggested groups with `git add` paths.
+Keep every `git commit` unrun until the user asks for it.

@@ -9,7 +9,7 @@ tests/tools were reverted.
 **Scope (confirmed):** target locales are `en-US`, `en-GB`, `zh-CN`, `zh-HK` and `zh-TW`.
 Support is shown in a small README table with `Yes` / `Partial` / `No` statuses. The code is
 to be modularised. Two make targets use the sibling binary `../adacovex/bin/adacovex`
-directly for complexity and SBOM work — no `alire.toml` or `alr` in this repo. All open
+directly for complexity and SBOM work. This repo has no `alire.toml` or `alr`. All open
 questions from the earlier draft have now been answered; the decisions are recorded in
 section 10.
 
@@ -59,7 +59,9 @@ section 10.
 
 ## 2. Technical debt (ranked)
 
-### T1. Tests test copies, not the product — highest priority
+### T1. Tests test copies, not the product (highest priority)
+
+- [x] T1: make tests import production modules instead of pasted copies
 
 `tests/test_core.py` and `tests/test_parser.py` paste stand-alone copies of production
 functions ("Pasted for Standalone Testing", "Simulated/Real Logic, FIXED") instead of
@@ -82,8 +84,10 @@ importing `pdf_fmt.*`. Consequences:
 
 ### T2. Locale/spell subsystem is narrow, stale and fragile
 
+- [x] T2: replace the narrow breame spelling path with the BCP 47 stack
+
 - `pdf_fmt/spell/__init__.py:12-65` supports exactly `EN-US` and `EN-UK` via `breame`
-  0.1.2 — released 2021-10-04, no release since. `README.md:99-106` documents known
+  0.1.2, released 2021-10-04, with no release since. `README.md:99-106` documents known
   inaccuracies (e.g. `localization` is not converted to `localisation`). Verified:
   `localization` is absent from breame's spelling constants while `organisation` is present.
 - `pdf-fmt.yaml:44-49` already carries `ignore_locale_strings` as a workaround for bad
@@ -101,6 +105,8 @@ importing `pdf_fmt.*`. Consequences:
 
 ### T3. ASCII-only pipeline blocks Chinese entirely
 
+- [x] T3: make the text pipeline Unicode and CJK aware
+
 - `pdf_fmt/core/__init__.py:7` `NON_ALPHA_PATTERN` and
   `pdf_fmt/core/__init__.py:5` `DEFAULT_CHARS_REGEX` are explicitly ASCII. **All Han
   characters would be deleted** by the default filter, so no Chinese backend could work
@@ -117,6 +123,8 @@ importing `pdf_fmt.*`. Consequences:
 
 ### T4. Three divergent entry points
 
+- [ ] T4: collapse the entry points into one implementation with thin wrappers
+
 `pdf-fmt.py`, `pdf_fmt/main.py`, `build.py` and `pdf_fmt/startup/__init__.py:110-163` contain
 near-duplicate startup/error-handling logic. Differences are real: `build.py` (used by the
 Nuitka release workflow) skips `check_venv()`, and one exception path uses `e.exit_code`
@@ -125,6 +133,8 @@ installer points users at `pdf-fmt.py`, CI+Nuitka use `build.py`. One implementa
 thin wrappers removes the drift.
 
 ### T5. Empty/dead modules, docs and conventions drift
+
+- [ ] T5: remove dead modules and update stale docs and conventions
 
 - `pdf_fmt/actions/__init__.py` and `pdf_fmt/filter/__init__.py` are empty; no imports.
 - `pdf_fmt/processing/__init__.py:266` reads `formatting.extract_table`, but that key is
@@ -142,6 +152,8 @@ thin wrappers removes the drift.
 
 ### T6. Runtime robustness (lower priority, relevant to any new backend)
 
+- [ ] T6: harden workers, timeouts and config caching
+
 - `pdf_fmt/parser/__init__.py:16` `os.cpu_count() - 1` assumes `os.cpu_count()` is not None.
 - `pdf_fmt/parser/__init__.py:54-65` starts an image-extraction subprocess with a 120 s
   join, terminates on timeout, but never reaps it.
@@ -153,6 +165,8 @@ thin wrappers removes the drift.
   invalidates the path cache; harmless for a one-shot CLI, but awkward for tests.
 
 ### T7. Monolithic modules (now measured)
+
+- [x] T7: split the modules that exceed the 10% LOC gate
 
 `adacovex complexity` reports `pdf_fmt/image/__init__.py` and `pdf_fmt/processing/__init__.py`
 at 14% of codebase LOC each, above the 10% gate; README alone is 13% when Markdown is not
@@ -196,7 +210,7 @@ honestly rather than over-promised.
 | `pyspellchecker` | 0.9.1 / 2026-10 | **Yes** | Bundled dictionaries for 12 languages; edit-distance suggestions | No grammar, no en-GB/en-US split, no Chinese, OpenSubtitles-derived dictionaries |
 | `symspellpy` | 6.10.2 / 2026-11 | **Yes** | Fast fuzzy typo correction | Needs a dictionary source per language; no grammar/dialect rules |
 | `codespell` | 2.4.3 / 2026-07 | **Yes** | Large typo dictionary; `dictionary_en-GB_to_en-US.txt` (~12.5 KB) | Source-code oriented, GB→US only, no grammar, CLI/file API; CC BY-SA 3.0-derived data |
-| `harper-py` (unofficial Harper bindings) | 0.2.0 / 2026-10 | **No** — Rust abi3 wheel (~10 MB) | In-process English grammar + spelling + style, dialect settings, user dictionary, rule toggles, ~0.2 s cold start, no Java/network, Apache-2.0; wheels for CI targets incl. 3.14 via abi3 | English only; unofficial single-maintainer binding; must pass Nuitka smoke test; import name `harper` collides with unrelated PyPI `harper` |
+| `harper-py` (unofficial Harper bindings) | 0.2.0 / 2026-10 | **No**, Rust abi3 wheel (~10 MB) | In-process English grammar + spelling + style, dialect settings, user dictionary, rule toggles, ~0.2 s cold start, no Java/network, Apache-2.0; wheels for CI targets incl. 3.14 via abi3 | English only; unofficial single-maintainer binding; must pass Nuitka smoke test; import name `harper` collides with unrelated PyPI `harper` |
 | `harper-cli` (third-party binary wrapper) | 2.13.0 / 2026-10 | No | Official Harper CLI binary; useful as reference/testing tool | External process, English only |
 | `language-tool-python` | 3.4.0 / 2026-05 | Wrapper only | Mature multilingual grammar/style/spell checking, en-US/en-GB variants | Java ≥17 + ~259 MB first-run download + JVM server; public API sends text to a third party; **deferred** |
 | `pyLanguagetool` | 0.11.0 / 2025-03 | Yes (client) | Small client for an existing LanguageTool JSON API | Requires an external server |
@@ -209,7 +223,7 @@ honestly rather than over-promised.
 
 | Library | Version / last release | Pure Python? | What it gives | Caveats |
 | --- | --- | --- | --- | --- |
-| `zhconv` | 1.4.3 / 2021 | **Yes** | Maximal-match conversion using MediaWiki tables; supports `zh-cn`, `zh-tw`, `zh-hk`, `zh-sg`, `zh-hans`, `zh-hant` — exactly our target tags | Stale release; validate HK/TW fidelity with a corpus (decision: zhconv + corpus) |
+| `zhconv` | 1.4.3 / 2021 | **Yes** | Maximal-match conversion using MediaWiki tables; supports `zh-cn`, `zh-tw`, `zh-hk`, `zh-sg`, `zh-hans`, `zh-hant`, exactly our target tags | Stale release; validate HK/TW fidelity with a corpus (decision: zhconv + corpus) |
 | `opencc` | 1.4.2 / 2026-08 | No (C++ wheels, incl. cp314) | High-quality OpenCC conversion incl. `s2hk`, `s2twp`, `tw2sp` | Native extension; allowed only if Nuitka smoke test passes; fallback if zhconv corpus fails |
 | `opencc-python-reimplemented` | 0.1.7 / 2023-02 | **Yes** | Pure-Python port using OpenCC dictionaries; import name `opencc` | Stale; name collides with native `opencc`; pick one |
 | `pangu` | 6.1.0 / 2026-10 | **Yes** | Inserts spaces between CJK and Latin/digits/symbols | Opinionated; opt-in per locale; don't apply inside code/math spans |
@@ -218,11 +232,11 @@ honestly rather than over-promised.
 | `pypinyin` | 0.55.0 / 2025-07 | **Yes** | Han → pinyin | Not a spellchecker |
 | `pycorrector` | 1.1.4 / 2026-07 | No in practice | Real Chinese text correction | Pulls `transformers`, `datasets`, `numpy`, `pandas`, `pyahocorasick` + models; out of scope |
 | `LanguageTool` (`zh`) | 6.6 rules table | No (Java) | 1863 XML rules + 1 Java rule for Chinese grammar | **No Chinese spellcheck**, no zh-HK/zh-TW variants, activity 0; deferred with all LT work |
-| Harper | 2.13.0 | No (Rust) | — | **English only** |
+| Harper | 2.13.0 | No (Rust) | None | **English only** |
 
 ## 5. Evaluation and recommendation
 
-### LanguageTool — deferred
+### LanguageTool: deferred
 
 Best grammar coverage for English and many European languages; Chinese has many XML rules
 but no spellcheck and no regional variants. Java ≥17, a 259 MB first-run download and a JVM
@@ -231,7 +245,7 @@ user text to a third party. Decision: **do not implement LT until all other plan
 are in**. When it is revisited, support both a user-supplied local/remote server and the
 public API, configured by the user, never silently downloaded at runtime.
 
-### Harper — English quality upgrade, native wheel allowed
+### Harper: English quality upgrade, native wheel allowed
 
 `harper-py` gives in-process grammar + spelling + style, explicit British/American dialects,
 user dictionaries and rule toggles, Apache-2.0, no Java/network, wheels for every current CI
@@ -239,7 +253,7 @@ target (abi3 covers 3.14). It is a young unofficial binding (0.2.0) and a native
 decision: pin it, smoke-test Nuitka standalone on Windows x64 / Linux x64 / macOS arm64, and
 use it when the build passes. It does nothing for Chinese.
 
-### Chinese — conversion + spacing, no spellcheck claim
+### Chinese: conversion and spacing, no spellcheck claim
 
 - Normalise tags with `langcodes`; use `zhconv` as the default converter and validate
   HK/TW output against sample text. Keep native `opencc` as a tested fallback if fidelity
@@ -284,23 +298,24 @@ is available and relevant (project conventions, compliance checks, test/lint gat
 
 No code is written yet; this is the intended split.
 
-- `pdf_fmt/image/`: separate extraction (`extract_images_from_pdf`), post-processing/format
-  conversion (`post_process_images`, `_process_single_image`, SVG wrapper), and similarity
-  dedupe (`_calculate_dhash`, `_discard_similar_images`).
-- `pdf_fmt/processing/`: separate PDF/table extraction, page-block processing, Markdown
-  table conversion, and post-actions (clipboard/file).
-- `pdf_fmt/core/`: keep small text/line/regex helpers; add Unicode-aware tokenisation and
-  CJK wrapping modules; keep formatting/typography helpers separate.
-- `pdf_fmt/spell/`: one backend interface plus backend modules — English curated map,
-  optional Harper, Chinese `zhconv`/`pangu` converter, script detection. `locale_checks`
-  becomes BCP 47 tag normalisation + validation with a hard break on legacy values.
-- `pdf_fmt/formatting/`: locale-aware date/number formatting (Babel) and typography rules,
-  kept separate from text cleanup.
-- `pdf_fmt/config/`, `pdf_fmt/startup/`, `pdf_fmt/parser/`: slim down; collapse the three
-  entry points into one implementation with thin wrappers.
-- Remove the two empty packages (`actions/`, `filter/`).
-- Target: every Python module comfortably under the adacovex 10% LOC dominance gate, with
-  tests importing the real modules and comments in the concise README style.
+- [x] Modularity: `pdf_fmt/image/` splits extraction (`extract_images_from_pdf`),
+  post-processing/format conversion (`post_process_images`, `_process_single_image`, SVG
+  wrapper), and similarity dedupe (`_calculate_dhash`, `_discard_similar_images`).
+- [x] Modularity: `pdf_fmt/processing/` splits PDF/table extraction, page-block processing,
+  Markdown table conversion, and post-actions (clipboard/file).
+- [ ] Modularity: `pdf_fmt/core/` keeps small text/line/regex helpers and gains Unicode-aware
+  tokenisation and CJK wrapping modules. Formatting and typography helpers stay separate.
+- [x] Modularity: `pdf_fmt/spell/` gains one backend interface plus backend modules for the
+  English curated map, optional Harper, the Chinese `zhconv`/`pangu` converter, and script
+  detection. `locale_checks` becomes BCP 47 tag normalisation and validation, with a hard
+  break on legacy values.
+- [x] Modularity: `pdf_fmt/formatting/` gains locale-aware date/number formatting (Babel) and
+  typography rules, kept separate from text cleanup.
+- [ ] Modularity: `pdf_fmt/config/`, `pdf_fmt/startup/` and `pdf_fmt/parser/` slim down. The
+  three entry points collapse into one implementation with thin wrappers.
+- [x] Modularity: remove the two empty packages (`actions/`, `filter/`).
+- [x] Modularity: keep every Python module under the adacovex 10% LOC gate, with tests that
+  import the real modules and comments in the concise README style.
 
 ## 8. Configuration decisions
 
@@ -320,13 +335,13 @@ Both use the existing sibling binary at `../adacovex/bin/adacovex` directly; no 
 or `alr` belongs in this project. An optional separate helper may run `just build` inside
 `../adacovex` to refresh the binary; the gates themselves must not depend on it.
 
-1. **Complexity / LOC gate** — invoke
+- [x] 1. **Complexity / LOC gate:** invoke
    `adacovex complexity --target=. --excludes=md,rst` plus `--skip-path` for `.venv`,
-   `.headroom`, `.lccst`, `build` and other generated dirs. Print per-file LOC and gate
+   `.headroom`, `.lccst`, `build`, `sbom.json` and other generated files. Print per-file LOC and gate
    status; non-zero exit fails `make`. Keep the 10% threshold. Baseline currently fails on
    `image` and `processing`; section 7 is the fix. Document that `cx=0` for Python means
    this is a size gate, not proof of low cyclomatic complexity.
-2. **SBOM** — invoke `adacovex sbom --target=. --format=cyclonedx-json --out=sbom.json`.
+- [x] 2. **SBOM:** invoke `adacovex sbom --target=. --format=cyclonedx-json --out=sbom.json`.
    Keep **only `sbom.json`** in the repo; do not keep the Markdown SBOM. The generated
    AD/Alire compliance fields are not meaningful here and dependency versions are blank
    until `requirements.txt` carries pins; generate, don't hand-edit. Optionally set
@@ -345,7 +360,7 @@ Multiprocessing workers must not invoke adacovex.
 5. **Native wheels:** allowed when Nuitka smoke tests pass on all release targets.
 6. **Binary/platform budget:** keep the current CI matrix (Windows x64, Linux x64, macOS
    arm64); musl/aarch64 may build from source best-effort, no guarantees.
-7. **LanguageTool:** low priority — local server and public API setups are the user's
+7. **LanguageTool:** low priority. Local server and public API setups are the user's
    effort; do not implement until all other plan.md features are in.
 8. **Config migration:** hard break, major semver bump.
 9. **Licensing:** attribute third-party data in-repo (LICENSES/NOTICE), prefer permissive
@@ -356,7 +371,7 @@ Multiprocessing workers must not invoke adacovex.
 13. **Docs/conventions:** README table uses `Yes`/`Partial`/`No`; create/update `AGENTS.md`;
     use the concise README technical style in code comments; invoke `lccst` MCP/skill when
     available and relevant.
-14. **Python versions:** add 3.14 — align `requires-python`, CI and README.
+14. **Python versions:** add 3.14 and align `requires-python`, CI and README.
 
 Implementation details still to settle during phases 2–5 (not blocking): which typography
 helper wins evaluation, the exact default auto-apply category list, and the zhconv corpus
@@ -364,22 +379,23 @@ acceptance threshold.
 
 ## 11. Phased implementation sequence
 
-1. Tests-first + conventions: import real modules, fix known drift, add Unicode/CJK fixtures
-   and a small PDF end-to-end; add `ruff` to a dev group; create/update `AGENTS.md`; use
-   `lccst` MCP/skill where available.
-2. Unicode foundation: replace ASCII filters/patterns, add CJK-aware wrapping and spacing,
-   make capitalisation/case-preservation locale-aware; add Babel formatting and typography
-   hooks.
-3. Modularise source (section 7) and land the two adacovex make targets; get the 10% gate
-   green and generate `sbom.json`.
-4. Config hard break with major semver bump: BCP 47 tags, `off`, `auto_detect_script`,
+- [x] 1. Tests-first + conventions: import real modules, fix known drift, add Unicode/CJK
+   fixtures and a small PDF end-to-end; add `ruff` to a dev group; update `AGENTS.md`; vendor
+   the STE skill and add the em dash gate; use `lccst` MCP/skill where available.
+- [x] 2. Unicode foundation: replace ASCII filters/patterns, add CJK-aware wrapping and
+   spacing, make capitalisation/case-preservation locale-aware; add Babel formatting and
+   typography hooks.
+- [x] 3. Modularise source (section 7) and land the two adacovex make targets; get the 10%
+   gate green and generate `sbom.json`.
+- [x] 4. Config hard break with major semver bump: BCP 47 tags, `off`, `auto_detect_script`,
    `auto_apply` categories, per-locale dictionaries.
-5. Pure-Python engines: curated en map, `zhconv` + corpus validation, `pangu`, typography
-   helper, optional `pyspellchecker`.
-6. Optional native upgrades: pin and Nuitka-smoke-test `harper-py` (English) and `opencc`
-   (zh fallback only if needed) on the three CI targets. LanguageTool stays deferred.
-7. Docs/release: minimal README table (section 6), changelog, API docs, `AGENTS.md`, Python
-   3.14 matrix; re-run `lccst compliance` and the complexity gate.
+- [x] 5. Pure-Python engines: curated en map, `zhconv` + corpus validation, `pangu`, typography
+   helper, optional `pyspellchecker`. The in-repo CJK spacing hook replaces `pangu`.
+- [ ] 6. Optional native upgrades: pin and Nuitka-smoke-test `harper-py` (English) and `opencc`
+   (zh fallback only if needed) on the three CI targets. LanguageTool stays deferred. An
+   import-level CI smoke job runs; wheels stay unpinned until standalone builds pass.
+- [ ] 7. Docs/release: minimal README table (section 6), changelog, API docs, `AGENTS.md`,
+   Python 3.14 matrix; re-run `lccst compliance` and the complexity gate.
 
 ## 12. Sources consulted
 
