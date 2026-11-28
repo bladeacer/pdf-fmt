@@ -1,5 +1,7 @@
+import io
 import re
 import unittest
+from contextlib import redirect_stdout
 
 from pdf_fmt.core import (
     NBSP,
@@ -22,7 +24,8 @@ class TestCoreFunctions(unittest.TestCase):
 
     def test_compile_footer_patterns_skips_invalid_regex(self):
         patterns = [r"page \d+", r"\d+/\d+", r"[0-9]+", r"("]
-        self.assertEqual(len(compile_footer_patterns(patterns)), 3)
+        with redirect_stdout(io.StringIO()):
+            self.assertEqual(len(compile_footer_patterns(patterns)), 3)
 
     def test_apply_regex_enclosure(self):
         text = "The quick brown fox jumps over the lazy dog."
@@ -31,7 +34,8 @@ class TestCoreFunctions(unittest.TestCase):
             "The quick brown **fox** jumps over the lazy **dog**.",
         )
         self.assertEqual(apply_regex_enclosure(text, "", "**"), text)
-        self.assertEqual(apply_regex_enclosure(text, "(", "**"), text)
+        with redirect_stdout(io.StringIO()):
+            self.assertEqual(apply_regex_enclosure(text, "(", "**"), text)
 
     def test_enforce_capitalization(self):
         self.assertEqual(enforce_capitalization(" already Capitalized"), " Already Capitalized")
