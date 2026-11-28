@@ -57,17 +57,21 @@ else
 fi
 
 echo "Updated pyproject.toml to version $VERSION_NUMBER"
-echo "Committing changes: $COMMIT_MSG"
 git add -A
-git commit -m "$COMMIT_MSG"
-git push
+if git diff --cached --quiet; then
+    echo "No changes to commit. Tagging the current commit."
+else
+    echo "Committing changes: $COMMIT_MSG"
+    git commit -m "$COMMIT_MSG"
+    git push
+fi
 
 echo "Cleaning up local and remote tag $VERSION_NUMBER..."
 git tag -d "$VERSION_NUMBER" 2>/dev/null || true
 git push --delete origin "$VERSION_NUMBER" 2>/dev/null || true
 
 echo "Creating and pushing new tag: $VERSION_NUMBER"
-git tag -a "$VERSION_NUMBER" -m "$COMMIT_MSG"
+git -c tag.gpgsign=false tag -a "$VERSION_NUMBER" -m "$COMMIT_MSG"
 git push origin "$VERSION_NUMBER"
 
 echo "Successfully updated to $VERSION_NUMBER and pushed."
