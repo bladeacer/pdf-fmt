@@ -1,147 +1,22 @@
-import argparse
-import ctypes
-import getpass
-import importlib.metadata
-import os
-import platform
-import re
-import sys
+"""CLI setup and startup checks."""
 
+from .checks import (
+    IS_CI_BUILD,
+    IS_NUITKA_COMPILED,
+    StartupCheckError,
+    check_not_root,
+    check_venv,
+)
+from .cli import setup_cli
+from .version import SCRIPT_VERSION, get_script_version
 
-def get_script_version() -> str:
-    """Resolves the version from CI, package metadata or pyproject.toml."""
-    ci_version = os.environ.get('PDF_FMT_VERSION')
-    if ci_version:
-        return ci_version
-
-    try:
-        return importlib.metadata.version("pdf-fmt")
-    except importlib.metadata.PackageNotFoundError:
-        pass
-
-    try:
-        base_dir = os.path.dirname(os.path.abspath(__file__))
-
-        candidates = [
-            os.path.join(base_dir, "..", "..", "pyproject.toml")
-        ]
-
-        for toml_path in candidates:
-            if os.path.exists(toml_path):
-                with open(toml_path, 'r', encoding='utf-8') as f:
-                    content = f.read()
-                    match = re.search(r'version\s*=\s*"([^"]+)"', content)
-                    if match:
-                        return match.group(1)
-    except Exception:
-        pass
-
-    return "0.1.0"
-
-
-SCRIPT_VERSION = get_script_version()
-IS_CI_BUILD = os.environ.get('PDF_FMT_CI_BUILD', '0') == '1'
-IS_NUITKA_COMPILED = "__compiled__" in globals()
-
-
-class StartupCheckError(Exception):
-    """Raised when a startup check fails."""
-
-    def __init__(self, message: str, exit_code: int = 1):
-        self.message = message
-        self.exit_code = exit_code
-        super().__init__(self.message)
-
-
-def check_venv() -> None:
-    """Checks the `.venv` requirement."""
-    if IS_NUITKA_COMPILED or getattr(sys, 'frozen', False) or IS_CI_BUILD:
-        return
-
-    is_venv_active = (sys.prefix != sys.base_prefix)
-
-    if is_venv_active:
-        venv_path = sys.prefix
-
-        if os.path.basename(venv_path) == '.venv':
-            return
-
-    message = (
-        "Error: Script must be run from the '.venv' virtual environment.\n"
-        "Please activate it first (e.g., 'source .venv/bin/activate')."
-    )
-    raise StartupCheckError(message, 1)
-
-
-def check_not_root() -> None | StartupCheckError:
-    """Rejects root and administrator privileges."""
-
-    non_admin_warning: str = """
-Error: Running as root is disabled for security and stability.
-Please run this application as a regular user.
-    """
-
-    if platform.system() in ('Linux', 'Darwin') and os.getuid() == 0:
-        message = non_admin_warning
-        raise StartupCheckError(message, 1)
-
-    elif platform.system() == 'Windows':
-        try:
-            if ctypes.windll.shell32.IsUserAnAdmin():
-                message = non_admin_warning
-                raise StartupCheckError(message, 1)
-
-        except Exception:
-            if getpass.getuser().lower() in ('administrator', 'admin'):
-                message = non_admin_warning
-                raise StartupCheckError(message, 1)
-
-
-def setup_cli() -> argparse.Namespace:
-    default_str: str = """pdf-fmt
-
-Cleanly extracts and formats text from a PDF document or convertible file.
-Licensed under GPLv3.
-    """
-    path_str: str = """
-Path to the file. Use '-' or leave empty to read from stdin (pipe).
-    """
-
-    parser = argparse.ArgumentParser(
-        prog='pdf-fmt',
-        description=default_str,
-        formatter_class=argparse.RawTextHelpFormatter
-    )
-    parser.add_argument(
-        'file_path',
-        nargs='?',
-        default=None,
-        help=path_str
-    )
-
-    parser.add_argument(
-        '-v', '--version',
-        action='version',
-        version=f'%(prog)s {SCRIPT_VERSION}',
-        help="Show script's version and exit."
-    )
-
-    args = parser.parse_args()
-
-    cond: bool = (args.file_path == "-" or
-                  (args.file_path is None and not sys.stdin.isatty())
-                  )
-
-    if cond:
-        args.file_path = "-"
-        return args
-
-    if args.file_path is None:
-        parser.print_help()
-        raise StartupCheckError("", 0)
-
-    if not os.path.exists(args.file_path):
-        message = f"Error: Input file not found at path: '{args.file_path}'"
-        raise StartupCheckError(message, 1)
-
-    return args
+__all__ = [
+    "IS_CI_BUILD",
+    "IS_NUITKA_COMPILED",
+    "SCRIPT_VERSION",
+    "StartupCheckError",
+    "check_not_root",
+    "check_venv",
+    "get_script_version",
+    "setup_cli",
+]
