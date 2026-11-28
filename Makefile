@@ -88,6 +88,7 @@ compile:
 		--noinclude-setuptools-mode=nofollow \
 		--noinclude-unittest-mode=nofollow \
 		--noinclude-pytest-mode=nofollow \
+		--include-package-data=zhconv \
 		--python-flag=no_docstrings \
 		--warn-unusual-code \
 		--output-file=pdf-fmt \
