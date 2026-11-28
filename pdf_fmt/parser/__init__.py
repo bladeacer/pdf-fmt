@@ -13,11 +13,12 @@ from pdf_fmt.startup import setup_cli
 
 def _get_validated_cores(config: Dict[str, Any]) -> int:
     """Calculates and validates the number of CPU cores to use."""
-    max_cores = max(1, os.cpu_count() - 1)
+    available = os.cpu_count() or 1
+    max_cores = max(1, available - 1)
     cores = config.get("processing", {}).get("cores", max_cores)
     try:
         cores_int = int(cores)
-        if 0 < cores_int < os.cpu_count():
+        if 0 < cores_int < available:
             return cores_int
     except (ValueError, TypeError):
         pass
@@ -47,7 +48,6 @@ def _run_image_pipeline(
     res_dir = os.path.abspath(os.path.expanduser(image_dir))
     os.makedirs(res_dir, exist_ok=True)
 
-    # Get values directly from YAML config
     fallback_size = actions.get('fallback_image_kb', 2000)
     formats = _get_image_formats(actions)
 
@@ -63,16 +63,18 @@ def _run_image_pipeline(
     if proc.is_alive():
         print("Warning: Image extraction timed out. Terminating.")
         proc.terminate()
+        proc.join(timeout=30)
+        if proc.is_alive():
+            print("Warning: Image extraction did not stop. Killing.")
+            proc.kill()
+            proc.join(timeout=30)
 
-    # Similarity discard check
     threshold = actions.get("image_discard_threshold", 95)
     _discard_similar_images(res_dir, threshold)
 
 
 def execute_main_pipeline(config: Dict[str, Any]) -> None:
-    """
-    Executes the main pipeline by coordinating specialized helpers.
-    """
+    """Coordinates conversion, extraction, image handling and output actions."""
     args = setup_cli()
 
     locale, ignores = locale_checks(config)
