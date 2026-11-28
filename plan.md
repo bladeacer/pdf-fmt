@@ -123,7 +123,7 @@ importing `pdf_fmt.*`. Consequences:
 
 ### T4. Three divergent entry points
 
-- [ ] T4: collapse the entry points into one implementation with thin wrappers
+- [x] T4: collapse the entry points into one implementation with thin wrappers
 
 `pdf-fmt.py`, `pdf_fmt/main.py`, `build.py` and `pdf_fmt/startup/__init__.py:110-163` contain
 near-duplicate startup/error-handling logic. Differences are real: `build.py` (used by the
@@ -134,7 +134,7 @@ thin wrappers removes the drift.
 
 ### T5. Empty/dead modules, docs and conventions drift
 
-- [ ] T5: remove dead modules and update stale docs and conventions
+- [x] T5: remove dead modules and update stale docs and conventions
 
 - `pdf_fmt/actions/__init__.py` and `pdf_fmt/filter/__init__.py` are empty; no imports.
 - `pdf_fmt/processing/__init__.py:266` reads `formatting.extract_table`, but that key is
@@ -152,7 +152,7 @@ thin wrappers removes the drift.
 
 ### T6. Runtime robustness (lower priority, relevant to any new backend)
 
-- [ ] T6: harden workers, timeouts and config caching
+- [x] T6: harden workers, timeouts and config caching
 
 - `pdf_fmt/parser/__init__.py:16` `os.cpu_count() - 1` assumes `os.cpu_count()` is not None.
 - `pdf_fmt/parser/__init__.py:54-65` starts an image-extraction subprocess with a 120 s

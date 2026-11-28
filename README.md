@@ -24,9 +24,8 @@ and issues.
 
 ### Project Status
 
-`pdf-fmt` is currently undergoing a major rewrite. Stay tuned.
-> The script installer in the main branch will not work, use the compiled binary
-> under the releases page.
+Version 1.0.0 uses BCP 47 locale tags. Legacy values `en-UK` and `none` are
+rejected. Use a compiled binary or `uv tool install` for a stable release.
 
 ### Features
 
@@ -39,7 +38,7 @@ and issues.
 * Image extraction
   * PNG, WEBP, SVG, etc. supported
 * Table extraction
-  * Experimental, will add a configuration file entry to configure behaviour
+  * Experimental. Set `formatting.extract_table` to pass options to pdfplumber.
 * and many others to come...
 
 ### Why I made this
@@ -96,21 +95,26 @@ configuration file. If you do, ensure that it is named `pdf-fmt.yaml`.
   * `$XDG_CONFIG_HOME` or `~/.config` if you are on Linux
 * The current working directory of the script
 
-## Known issues
+## Supported languages
 
-> Inaccurate locale enforcement e.g. localization -> localization even
-> with UK locale enforcement enabled.
+| Locale | Recognised | Spelling / variant | Formatting | Linting |
+| --- | --- | --- | --- | --- |
+| `en-US` | Yes | Yes (US) | Yes | Partial (Harper optional) |
+| `en-GB` | Yes | Yes (UK) | Yes | Partial (Harper optional) |
+| `zh-CN` | Yes | Partial (Simplified conversion) | Yes | No |
+| `zh-HK` | Yes | Partial (HK Traditional conversion) | Yes | No |
+| `zh-TW` | Yes | Partial (TW Traditional conversion) | Yes | No |
 
-Upstream locale enforcement libraries may yield inaccurate words. I am working
-on adding a configuration option to define your own locale mappings to override
-Breame's.
+`Partial` means script or variant conversion, not word-level spellcheck.
+Chinese linting is not provided. Protected words go in
+`filters.linting.spelling.ignore_locale_strings`.
 
 # Quick Start
 
 ## Prerequisites
 
 * You would need to have [Git](https://git-scm.com/install) and
-[Python 3.10 or above](https://www.python.org/downloads/) installed
+[Python 3.10 to 3.14](https://www.python.org/downloads/) installed
   * To confirm, run `which git` and `which python` in a Linux/macOS terminal
   * For Windows users, run `where git` and `where python` in Command Prompt
 
@@ -206,8 +210,7 @@ the script installer or compiling from source.
 
 ## About Downloaded Binaries
 
-* Choose the binary **corresponding to your operating system**
-* macOS is not supported.
+* Choose the binary **corresponding to your operating system**.
 
 If you wish to get an updated version of the executable, download the newer
 latest version and remove the old executable file.
@@ -310,8 +313,8 @@ pyenv install 3.11
 pyenv local 3.11
 ```
 
-You can use any other target Python version, though `pdf-fmt` primarily supports
-Python 3.10 or above.
+You can use any other target Python version, though `pdf-fmt` supports
+Python 3.10 to 3.14.
 
 ### Linux/macOS
 
@@ -320,13 +323,11 @@ Python 3.10 or above.
 # script installer prior
 git clone --depth 1 https://github.com/bladeacer/pdf-fmt
 cd pdf-fmt
-chmod +x ./scripts/compile.sh
-./scripts/compile.sh
+make compile
 ```
 
-The [script](./scripts/compile.sh) creates a separate virtual environment for
-compiling from source. It would output the binary to the `build/` directory once
-compiling is done.
+The `compile` target creates a separate virtual environment for the build. It
+writes the binary to `build/` when the build completes.
 > Compilation too slow? Increase the number specified in the jobs count.
 > **Only do this if you have sufficient CPU cores and hardware.**
 > Remove the `--low-memory` flag at your own risk.
@@ -336,7 +337,7 @@ compiling is done.
 Compilation logs will be found at `nuitka-build.log`.
 Crash reports would be found at `nuitka-crash-report.xml`.
 
-Alternatively, you can call [this script on Linux or macOS](./scripts/compile.sh).
+The [Makefile](./Makefile) holds the build flags.
 
 ### Development status
 
@@ -400,7 +401,7 @@ You may need to install [patchelf](https://github.com/NixOS/patchelf)
 | 3.11 | Yes | Compiling from source, script works. |
 | 3.12 | Yes | Compiling from source, script works. Used in GitHub Actions. |
 | 3.13 | Partial | Compiling from source, script works. |
-| 3.14 | Untested | PRs welcome |
+| 3.14 | Yes | Tests pass. Compiled binaries use 3.12. |
 
 ## Contributing
 
@@ -414,8 +415,8 @@ and [Contributing Guide](./CONTRIBUTING.md).
 
 ```bash
 git clone https://github.com/bladeacer/pdf-fmt
-chmod +x scripts/setup.sh
-./scripts/dev.sh
+cd pdf-fmt
+make setup
 ```
 
 ## Benchmarks

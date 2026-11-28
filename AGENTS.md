@@ -15,7 +15,8 @@ reason is not obvious from the code; never restate the code or mark it with `FIX
 | `pdf_fmt/processing/` | PDF extraction, page blocks, tables, post-actions |
 | `pdf_fmt/image/` | Image extraction, conversion, deduplication |
 | `pdf_fmt/config/`, `pdf_fmt/startup/` | Config loading, CLI and startup checks |
-| `build.py`, `pdf-fmt.py`, `pdf_fmt/main.py` | Entry points; to be collapsed into one |
+| `pdf_fmt/main.py` | Single CLI implementation |
+| `build.py`, `pdf-fmt.py` | Thin entry-point wrappers |
 | `tests/` | `unittest` suite importing real modules, with end-to-end PDF and CLI coverage |
 | `tools/` | Documentation and gate checks |
 | `skills/` | Vendored agent skills |
