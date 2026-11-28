@@ -1,5 +1,7 @@
 """Chinese script conversion, with no word-level spellcheck."""
 
+import warnings
+
 import zhconv
 
 TARGETS = {"zh-cn": "zh-cn", "zh-hk": "zh-hk", "zh-tw": "zh-tw"}
@@ -10,4 +12,6 @@ def convert_chinese(text: str, locale: str) -> str:
     target = TARGETS.get(locale.lower())
     if target is None:
         return text
-    return zhconv.convert(text, target)
+    with warnings.catch_warnings():
+        warnings.filterwarnings("ignore", category=ResourceWarning, module="zhconv")
+        return zhconv.convert(text, target)
