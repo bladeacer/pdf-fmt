@@ -31,7 +31,7 @@ Keep modules small: the adacovex gate fails any Python file above 10% of codebas
 - `make lint` runs `uv run ruff check`
 - `make docs-check` rejects em dashes in hand-written Markdown docs
 - `make complexity` runs the adacovex 10% LOC gate on source files
-- `make check` runs `lint`, `test`, `test-e2e`, `docs-check` and `complexity` in order
+- `make check` runs `lint`, `test`, `compile`, `test-e2e`, `docs-check` and `complexity` in order
 - `make sbom` generates `sbom.json` with the sibling adacovex binary
 - `make run ARGS='...'` runs the script entry point
 - `make compile`, `make run-compiled` build and check the Nuitka binary
