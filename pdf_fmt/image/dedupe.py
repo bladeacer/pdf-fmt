@@ -16,7 +16,8 @@ def _calculate_dhash(image: Image.Image, hash_size: int = 8) -> int:
     img = image.convert("L").resize(
         (hash_size + 1, hash_size), Image.Resampling.LANCZOS
     )
-    pixels = list(img.getdata())
+    get_pixels = getattr(img, "get_flattened_data", img.getdata)
+    pixels = list(get_pixels())
 
     diff_hash = 0
     for row in range(hash_size):
