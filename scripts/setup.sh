@@ -1,4 +1,4 @@
-e!/bin/sh
+#!/bin/sh
 set -e
 if [ -d ".venv" ]; then
     echo "Cleaning up existing '.venv' directory..."
