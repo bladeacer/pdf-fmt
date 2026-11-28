@@ -12,6 +12,7 @@ import yaml
 from pdf_fmt.config import CONFIG_FILENAME, clear_config_cache, load_config
 from pdf_fmt.core import DEFAULT_CHARS_REGEX
 from pdf_fmt.parser import _get_validated_cores, _run_image_pipeline
+from pdf_fmt.parser import images as image_pipeline_module
 from pdf_fmt.processing import PageProcessArgs, _run_processing_pool
 from pdf_fmt.processing import pool as pool_module
 from pdf_fmt.spell import _english_backend, enforce_spelling
@@ -52,10 +53,11 @@ class TestImageProcessReaping(unittest.TestCase):
             actions = {"image_dir": str(root / "images")}
             process = MagicMock()
             process.is_alive.side_effect = alive_results
-            with patch(
-                "pdf_fmt.parser.multiprocessing.Process", return_value=process
-            ), patch("pdf_fmt.parser._discard_similar_images") as discard, \
-                 redirect_stdout(io.StringIO()) as output:
+            with patch.object(
+                image_pipeline_module.multiprocessing, "Process", return_value=process
+            ), patch.object(
+                image_pipeline_module, "_discard_similar_images"
+            ) as discard, redirect_stdout(io.StringIO()) as output:
                 _run_image_pipeline(str(root / "sample.pdf"), actions, 1)
             process.start.assert_called_once_with()
             self.assertEqual(process.join.call_args_list, expected_joins)

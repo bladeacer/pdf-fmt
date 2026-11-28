@@ -14,6 +14,7 @@ from pdf_fmt.core import (
     preserve_case,
     replace_successive_spaces,
     split_fmt_line,
+    tokenize_text,
 )
 
 
@@ -76,6 +77,12 @@ class TestCoreFunctions(unittest.TestCase):
     def test_contains_cjk(self):
         self.assertTrue(contains_cjk("中文 test"))
         self.assertFalse(contains_cjk("plain ASCII"))
+
+    def test_tokenize_text_keeps_cjk_and_whitespace(self):
+        self.assertEqual(
+            tokenize_text("中文 with\u00A0spaces"),
+            ["中文", " ", "with", "\u00A0", "spaces"],
+        )
 
     def test_ln_cont_factory(self):
         restricted = ln_cont_factory(re.compile(r"[a-zA-Z\s]+"))

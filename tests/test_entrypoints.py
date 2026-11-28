@@ -7,6 +7,7 @@ from unittest.mock import patch
 
 from pdf_fmt.main import main
 from pdf_fmt.startup import StartupCheckError
+from pdf_fmt.startup import checks as startup_checks
 
 ROOT = Path(__file__).resolve().parent.parent
 
@@ -82,6 +83,16 @@ class TestSharedEntryPoint(unittest.TestCase):
             with self.assertRaises(SystemExit) as raised:
                 main()
         self.assertEqual(raised.exception.code, 0)
+
+    def test_windows_admin_is_rejected(self):
+        with patch.object(
+            startup_checks.platform, "system", return_value="Windows"
+        ), patch.object(
+            startup_checks.ctypes, "windll", create=True
+        ) as windll:
+            windll.shell32.IsUserAnAdmin.return_value = 1
+            with self.assertRaises(StartupCheckError):
+                startup_checks.check_not_root()
 
     def test_unexpected_error_exits_one(self):
         with patch("pdf_fmt.main.check_not_root"), \
