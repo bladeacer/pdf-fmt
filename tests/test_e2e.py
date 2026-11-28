@@ -30,6 +30,7 @@ from tests.fixtures.pdf_builder import build_pdf
 
 ROOT = Path(__file__).resolve().parent.parent
 SCRIPT = ROOT / 'pdf-fmt.py'
+BINARY = ROOT / 'build' / 'pdf-fmt'
 PAGES = [
     ['Hello World from page one.', 'Colour and organisation.', 'Copyright 2024'],
     ['Second page text.'],
@@ -382,6 +383,44 @@ class TestConfigE2E(unittest.TestCase):
                 future = time.time() + 10
                 os.utime(path, (future, future))
                 self.assertEqual(load_config()['processing']['cores'], 3)
+
+
+@unittest.skipUnless(BINARY.exists(), 'compiled binary not built')
+class TestCompiledBinaryE2E(unittest.TestCase):
+
+    def test_version(self):
+        result = subprocess.run(
+            [str(BINARY), '--version'],
+            cwd=ROOT, env=cli_environment(), capture_output=True,
+            text=True, timeout=120,
+        )
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertRegex(result.stdout, r'pdf-fmt \d+\.\d+\.\d+')
+
+    def test_extracts_cjk_and_table_to_file(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            pages = [
+                ['这是一个测试 with Python3.', 'Colour and organisation.'],
+                ['第二页文本。'],
+                ['第三页。'],
+            ]
+            pdf = write_pdf(root, pages=pages, table=True)
+            write_config(root, base_config(root, locale='zh-TW'))
+            env = cli_environment()
+            env['PDF_FMT_CONFIG_PATH'] = str(root / CONFIG_FILENAME)
+            result = subprocess.run(
+                [str(BINARY), str(pdf)],
+                cwd=root, env=env, capture_output=True,
+                text=True, timeout=120,
+            )
+
+            self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+            self.assertIn('SUCCESS: Extracted content written to', result.stdout)
+            written = (root / 'out.md').read_text(encoding='utf-8')
+            self.assertIn('這是一個測試 with Python3.', written)
+            self.assertIn('| Name | Value |', written)
+            self.assertIn('___', written)
 
 
 if __name__ == '__main__':
