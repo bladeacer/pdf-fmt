@@ -1,45 +1,9 @@
 # Copyright (c) 2025 bladeacer
 # Licensed under the GPLv3 License. See LICENSE file for details.
 
-import os
-import sys
-from typing import Any, Dict
+"""Compiled binary entry point."""
 
-from pdf_fmt.startup import StartupCheckError, check_not_root
-
-
-def main():
-    """Main execution logic for the local script."""
-
-    try:
-        check_not_root()
-
-    except StartupCheckError as e:
-        print(e.message)
-        sys.exit(e.exit_code)
-    except Exception as e:
-        print(f"Unknown error: {e}")
-        sys.exit(1)
-
-    try:
-        from pdf_fmt import config
-        from pdf_fmt.parser import execute_main_pipeline
-
-        CONFIG: Dict[str, Any] = config.load_config()
-
-        execute_main_pipeline(CONFIG)
-    except StartupCheckError as e:
-        print(e.message)
-        sys.exit(e.exit_code)
-    except BrokenPipeError:
-        devnull = os.open(os.devnull, os.O_WRONLY)
-        os.dup2(devnull, sys.stdout.fileno())
-        sys.stdout.close()
-        os._exit(0)
-    except Exception as e:
-        print(f"Unknown error: {e}")
-        sys.exit(1)
-
+from pdf_fmt.main import main
 
 if __name__ == "__main__":
     main()

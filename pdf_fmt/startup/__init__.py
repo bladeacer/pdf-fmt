@@ -9,12 +9,7 @@ import sys
 
 
 def get_script_version() -> str:
-    """
-    Resolves version with support for:
-    1. CI Environment variables (PDF_FMT_VERSION).
-    2. Local root execution (./pyproject.toml).
-    3. Installed package execution (../../pyproject.toml).
-    """
+    """Resolves the version from CI, package metadata or pyproject.toml."""
     ci_version = os.environ.get('PDF_FMT_VERSION')
     if ci_version:
         return ci_version
@@ -50,9 +45,7 @@ IS_NUITKA_COMPILED = "__compiled__" in globals()
 
 
 class StartupCheckError(Exception):
-    """
-    Custom exception raised when a critical startup environment check fails.
-    """
+    """Raised when a startup check fails."""
 
     def __init__(self, message: str, exit_code: int = 1):
         self.message = message
@@ -61,7 +54,7 @@ class StartupCheckError(Exception):
 
 
 def check_venv() -> None:
-    """Checks if the script is running inside a virtual environment (.venv)."""
+    """Checks the `.venv` requirement."""
     if IS_NUITKA_COMPILED or getattr(sys, 'frozen', False) or IS_CI_BUILD:
         return
 
@@ -81,10 +74,7 @@ def check_venv() -> None:
 
 
 def check_not_root() -> None | StartupCheckError:
-    """
-    Checks that the application is not running with root/administrator
-    privileges.
-    """
+    """Rejects root and administrator privileges."""
 
     non_admin_warning: str = """
 Error: Running as root is disabled for security and stability.
@@ -136,25 +126,19 @@ Path to the file. Use '-' or leave empty to read from stdin (pipe).
         help="Show script's version and exit."
     )
 
-    try:
-        args = parser.parse_args()
+    args = parser.parse_args()
 
-        cond: bool = (args.file_path == "-" or
-                      (args.file_path is None and not sys.stdin.isatty())
-                      )
+    cond: bool = (args.file_path == "-" or
+                  (args.file_path is None and not sys.stdin.isatty())
+                  )
 
-        if cond:
-            args.file_path = "-"
-            return args
+    if cond:
+        args.file_path = "-"
+        return args
 
-        if args.file_path is None:
-            parser.print_help()
-            raise StartupCheckError("", 0)
-
-    except BrokenPipeError:
-        devnull = os.open(os.devnull, os.O_WRONLY)
-        os.dup2(devnull, sys.stdout.fileno())
-        sys.exit(0)
+    if args.file_path is None:
+        parser.print_help()
+        raise StartupCheckError("", 0)
 
     if not os.path.exists(args.file_path):
         message = f"Error: Input file not found at path: '{args.file_path}'"
