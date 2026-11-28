@@ -26,7 +26,7 @@ pdf-fmt = "pdf_fmt.main:main"
 
 [dependency-groups]
 build = [
-  "nuitka"
+  "nuitka[onefile]"
 ]
 dev = [
   "ruff"
