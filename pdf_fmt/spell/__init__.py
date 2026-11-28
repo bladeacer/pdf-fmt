@@ -1,7 +1,8 @@
 """Locale checks and spelling backends."""
 
 import re
-from typing import Any, Dict, List, Tuple
+from functools import lru_cache
+from typing import Any, Callable, Dict, List, Tuple
 
 from pdf_fmt.core import NON_ALPHA_PATTERN, preserve_case
 
@@ -9,6 +10,16 @@ from .english import apply_curated_map
 from .locale import locale_dictionary, normalize_locale
 
 BREAME_ERROR = "Error: 'breame' library required for spelling. Run: pip install breame."
+
+
+@lru_cache(maxsize=1)
+def _english_backend() -> Tuple[Callable[[str], str], Callable[[str], str]]:
+    """Loads the English spelling functions once per process."""
+    try:
+        from breame.spelling import get_american_spelling, get_british_spelling
+    except ImportError as error:
+        raise RuntimeError(BREAME_ERROR) from error
+    return get_american_spelling, get_british_spelling
 
 
 def enforce_spelling(
@@ -19,11 +30,7 @@ def enforce_spelling(
     if not apply_variant or resolved not in ('en-US', 'en-GB'):
         return text
 
-    try:
-        from breame.spelling import get_american_spelling, get_british_spelling
-    except ImportError as error:
-        raise RuntimeError(BREAME_ERROR) from error
-
+    american, british = _english_backend()
     ignore_set = {item.lower() for item in ignore_list}
 
     def process_word(word: str) -> str:
@@ -41,9 +48,9 @@ def enforce_spelling(
         else:
             try:
                 if resolved == 'en-US':
-                    base_converted = get_american_spelling(lookup)
+                    base_converted = american(lookup)
                 else:
-                    base_converted = get_british_spelling(lookup)
+                    base_converted = british(lookup)
             except ValueError:
                 base_converted = lookup
 
