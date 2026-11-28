@@ -1,13 +1,12 @@
 # Changelog
 
-All notable changes to this project will be documented in this file.
+All notable changes to this project are documented in this file.
 
-The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
-and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/)
+with plain version headings and no Unreleased section. This project adheres to
+[Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
-
-## [1.0.0] - 2026-11-28
+## 1.0.0 - 2026-11-28
 
 ### Added
 
@@ -34,6 +33,3 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Kept CJK text through the default character filter and line wrapping.
 - Preserved whitespace and CJK characters during tokenisation.
 - Rejected Windows administrator access reliably.
-
-[Unreleased]: https://github.com/bladeacer/pdf-fmt/compare/1.0.0...HEAD
-[1.0.0]: https://github.com/bladeacer/pdf-fmt/releases/tag/1.0.0

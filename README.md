@@ -26,6 +26,7 @@ and issues.
 
 Version 1.0.0 uses BCP 47 locale tags. Legacy values `en-UK` and `none` are
 rejected. Use a compiled binary or `uv tool install` for a stable release.
+Release notes are in [CHANGELOG.md](./CHANGELOG.md).
 
 ### Features
 
