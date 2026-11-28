@@ -303,7 +303,7 @@ No code is written yet; this is the intended split.
   wrapper), and similarity dedupe (`_calculate_dhash`, `_discard_similar_images`).
 - [x] Modularity: `pdf_fmt/processing/` splits PDF/table extraction, page-block processing,
   Markdown table conversion, and post-actions (clipboard/file).
-- [ ] Modularity: `pdf_fmt/core/` keeps small text/line/regex helpers and gains Unicode-aware
+- [x] Modularity: `pdf_fmt/core/` keeps small text/line/regex helpers and gains Unicode-aware
   tokenisation and CJK wrapping modules. Formatting and typography helpers stay separate.
 - [x] Modularity: `pdf_fmt/spell/` gains one backend interface plus backend modules for the
   English curated map, optional Harper, the Chinese `zhconv`/`pangu` converter, and script
@@ -311,7 +311,7 @@ No code is written yet; this is the intended split.
   break on legacy values.
 - [x] Modularity: `pdf_fmt/formatting/` gains locale-aware date/number formatting (Babel) and
   typography rules, kept separate from text cleanup.
-- [ ] Modularity: `pdf_fmt/config/`, `pdf_fmt/startup/` and `pdf_fmt/parser/` slim down. The
+- [x] Modularity: `pdf_fmt/config/`, `pdf_fmt/startup/` and `pdf_fmt/parser/` slim down. The
   three entry points collapse into one implementation with thin wrappers.
 - [x] Modularity: remove the two empty packages (`actions/`, `filter/`).
 - [x] Modularity: keep every Python module under the adacovex 10% LOC gate, with tests that
@@ -396,7 +396,7 @@ acceptance threshold.
 - [ ] 6. Optional native upgrades: pin and Nuitka-smoke-test `harper-py` (English) and `opencc`
    (zh fallback only if needed) on the three CI targets. LanguageTool stays deferred. An
    import-level CI smoke job runs; wheels stay unpinned until standalone builds pass.
-- [ ] 7. Docs/release: minimal README table (section 6), changelog, API docs, `AGENTS.md`,
+- [x] 7. Docs/release: minimal README table (section 6), changelog, API docs, `AGENTS.md`,
    Python 3.14 matrix; re-run `lccst compliance` and the complexity gate.
 
 ## 12. Sources consulted
