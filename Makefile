@@ -1,4 +1,6 @@
 # Variables
+SHELL := /bin/bash
+.SHELLFLAGS := -o pipefail -c
 UV = uv
 VENV_DEV = .venv
 VENV_BUILD = .venv-build
@@ -19,7 +21,7 @@ help:
 	@echo "  test          Run unit tests using .venv"
 	@echo "  test-e2e      Run end-to-end tests, including the compiled binary when built"
 	@echo "  lint          Run Ruff checks"
-	@echo "  check         Run lint, tests, E2E, docs and complexity gates"
+	@echo "  check         Run lint, tests, compile, E2E, docs and complexity gates"
 	@echo "  docs-check    Reject em dashes in hand-written Markdown docs"
 	@echo "  complexity    Run the adacovex 10% LOC gate on source files"
 	@echo "  sbom          Generate sbom.json with the sibling adacovex binary"
@@ -48,7 +50,7 @@ test-e2e:
 lint:
 	$(UV) run ruff check
 
-check: lint test test-e2e docs-check complexity
+check: lint test compile test-e2e docs-check complexity
 
 docs-check:
 	$(UV) run python tools/check_docs.py
