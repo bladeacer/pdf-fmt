@@ -1,10 +1,9 @@
 """Locale checks and spelling backends."""
 
-import re
 from functools import lru_cache
 from typing import Any, Callable, Dict, List, Tuple
 
-from pdf_fmt.core import NON_ALPHA_PATTERN, preserve_case
+from pdf_fmt.core import NON_ALPHA_PATTERN, preserve_case, tokenize_text
 
 from .english import apply_curated_map
 from .locale import locale_dictionary, normalize_locale
@@ -62,7 +61,7 @@ def enforce_spelling(
 
     return "".join(
         token if token.isspace() else process_word(token)
-        for token in re.findall(r'\s+|\S+', text)
+        for token in tokenize_text(text)
     )
 
 
