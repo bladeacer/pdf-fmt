@@ -15,8 +15,12 @@ from unittest.mock import patch
 import yaml
 from PIL import Image
 
-from pdf_fmt import config as config_module
-from pdf_fmt.config import CONFIG_FILENAME, find_config_file, load_config
+from pdf_fmt.config import (
+    CONFIG_FILENAME,
+    clear_config_cache,
+    find_config_file,
+    load_config,
+)
 from pdf_fmt.conversion import convert_to_pdf
 from pdf_fmt.core import DEFAULT_CHARS_REGEX, DEFAULT_CONVERT_FORMATS
 from pdf_fmt.image import _discard_similar_images, _extract_and_format_images
@@ -366,22 +370,18 @@ class TestConfigE2E(unittest.TestCase):
 
             env = dict(os.environ)
             env['PDF_FMT_CONFIG_PATH'] = str(path)
+            self.addCleanup(clear_config_cache)
+            clear_config_cache()
             with patch.dict(os.environ, env):
-                with patch.multiple(
-                    config_module,
-                    _CONFIG_PATH_CACHE=None,
-                    _CONFIG_CACHE={},
-                    _CONFIG_MTIME_CACHE=0.0,
-                ):
-                    self.assertEqual(find_config_file(), str(path))
-                    self.assertEqual(load_config()['processing']['cores'], 2)
+                self.assertEqual(find_config_file(), str(path))
+                self.assertEqual(load_config()['processing']['cores'], 2)
 
-                    second = base_config(root)
-                    second['processing']['cores'] = 3
-                    path.write_text(yaml.safe_dump(second), encoding='utf-8')
-                    future = time.time() + 10
-                    os.utime(path, (future, future))
-                    self.assertEqual(load_config()['processing']['cores'], 3)
+                second = base_config(root)
+                second['processing']['cores'] = 3
+                path.write_text(yaml.safe_dump(second), encoding='utf-8')
+                future = time.time() + 10
+                os.utime(path, (future, future))
+                self.assertEqual(load_config()['processing']['cores'], 3)
 
 
 if __name__ == '__main__':
