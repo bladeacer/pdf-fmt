@@ -6,7 +6,7 @@ BUILD_DIR = build
 EXE = $(BUILD_DIR)/pdf-fmt
 LOG_FILE = nuitka-build.log
 
-.PHONY: help setup test run compile run-compiled act clean requirements release docs-check complexity sbom
+.PHONY: help setup test test-e2e lint check run compile run-compiled act clean requirements release docs-check complexity sbom
 
 # Default target: show help
 help:
@@ -17,6 +17,9 @@ help:
 	@echo "  install       Install project locally using uv"
 	@echo "  sync          setup + install"
 	@echo "  test          Run unit tests using .venv"
+	@echo "  test-e2e      Run end-to-end tests, including the compiled binary when built"
+	@echo "  lint          Run Ruff checks"
+	@echo "  check         Run lint, tests, E2E, docs and complexity gates"
 	@echo "  docs-check    Reject em dashes in hand-written Markdown docs"
 	@echo "  complexity    Run the adacovex 10% LOC gate on source files"
 	@echo "  sbom          Generate sbom.json with the sibling adacovex binary"
@@ -38,6 +41,14 @@ requirements:
 # Run Tests (Does NOT force a requirements update)
 test:
 	$(UV) run python -m unittest discover -sv tests
+
+test-e2e:
+	$(UV) run python -m unittest discover -sv tests -p 'test_e2e*.py'
+
+lint:
+	$(UV) run ruff check
+
+check: lint test test-e2e docs-check complexity
 
 docs-check:
 	$(UV) run python tools/check_docs.py
