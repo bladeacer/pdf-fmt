@@ -66,6 +66,7 @@ jobs:
           nuitka-version: main
           script-name: build.py
           mode: app
+          include-package-data: zhconv
           python-flag: no_docstrings
           deployment: on
           output-file: pdf-fmt
